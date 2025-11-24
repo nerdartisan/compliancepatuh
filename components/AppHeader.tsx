@@ -22,6 +22,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
     { id: 'search', label: 'Research' },
     { id: 'library', label: 'Library' },
     { id: 'graph', label: 'Analysis' },
+    { id: 'about', label: 'About' },
   ];
 
   // Handle click outside to close dropdown

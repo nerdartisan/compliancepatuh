@@ -6,6 +6,7 @@ import ChatHistorySidebar from './components/ChatHistorySidebar';
 import LibraryPage from './components/LibraryPage';
 import SearchDropdown from './components/SearchDropdown';
 import AdvancedSearchPage from './components/AdvancedSearchPage';
+import AboutPage from './components/AboutPage';
 import { queryComplianceEngine } from './services/geminiService';
 import { 
   ArrowRight, 
@@ -191,6 +192,10 @@ const App = () => {
   const [landingSearchMode, setLandingSearchMode] = useState<'chat' | 'search'>('chat');
   const landingSearchRef = useRef<HTMLDivElement>(null);
 
+  // Pagination for Departments
+  const [deptPage, setDeptPage] = useState(0);
+  const deptsPerPage = 6;
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -287,13 +292,23 @@ const App = () => {
       y: rect.bottom
     });
   };
+
+  const handleDeptNext = () => {
+    if ((deptPage + 1) * deptsPerPage < DEPARTMENTS.length) {
+      setDeptPage(prev => prev + 1);
+    }
+  };
+
+  const handleDeptPrev = () => {
+    if (deptPage > 0) {
+      setDeptPage(prev => prev - 1);
+    }
+  };
   
   const renderLanding = () => (
     <div className="flex flex-col h-full w-full overflow-y-auto bg-bg-main font-sans w-full relative">
       {/* 
         HERO SECTION 
-        Removed z-0 and transition-all to prevent stacking context trapping search dropdown.
-        This allows z-50 child (search) to render above z-30 sibling (departments).
       */}
       <div className="w-full bg-text-main pb-32 relative flex-shrink-0">
         <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto text-white/90 text-sm font-medium">
@@ -305,7 +320,7 @@ const App = () => {
               </div>
               <div className="hidden md:flex items-center gap-8">
                   <button onClick={() => setView('library')} className="hover:text-white transition-colors">Browse</button>
-                  <a href="#" className="hover:text-white transition-colors">About</a>
+                  <button onClick={() => setView('about')} className="hover:text-white transition-colors">About</button>
                   <a href="#" className="hover:text-white transition-colors">Contribute</a>
               </div>
           </div>
@@ -330,7 +345,10 @@ const App = () => {
             Explore, search, and analyze over 15,000 internal & regulatory texts with precision and authority.
           </p>
 
-          <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-full backdrop-blur-md transition-all text-sm mb-10 border border-white/20 group">
+          <button 
+            onClick={() => setView('about')}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-full backdrop-blur-md transition-all text-sm mb-10 border border-white/20 group"
+          >
             <span className="w-5 h-5 bg-white text-primary rounded-full flex items-center justify-center text-[8px] pl-0.5 group-hover:scale-110 transition-transform">▶</span> 
             How i-Patuh Works - 2:00
           </button>
@@ -432,27 +450,36 @@ const App = () => {
 
       {/* 
         DEPARTMENTS / COLLECTIONS SECTION
-        z-30 to Ensure it sits ON TOP of the Hero Background (auto/0) but BELOW Search (z-50)
       */}
       <div className="relative z-30 w-full px-4 md:px-8 pb-16 -mt-20">
          <div className="max-w-7xl mx-auto bg-bg-card rounded-[2.5rem] shadow-xl border border-border-subtle p-8 md:p-12">
             <div className="flex items-center justify-between mb-10 text-text-main">
               <div className="flex items-center gap-4">
                 <h2 className="font-serif font-bold text-3xl text-text-main">Departments</h2>
-                <span className="bg-gray-200 text-text-muted text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">{DEPARTMENTS.length} Units</span>
+                <span className="bg-gray-200 text-text-muted text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                  {DEPARTMENTS.length} Units
+                </span>
               </div>
               <div className="flex gap-3">
-                <button className="w-10 h-10 rounded-full border border-border-subtle flex items-center justify-center text-text-muted hover:text-text-main hover:border-text-main transition-all bg-bg-card">
+                <button 
+                  onClick={handleDeptPrev}
+                  disabled={deptPage === 0}
+                  className={`w-10 h-10 rounded-full border border-border-subtle flex items-center justify-center transition-all bg-bg-card ${deptPage === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-text-muted hover:text-text-main hover:border-text-main'}`}
+                >
                   <ArrowLeft size={18} />
                 </button>
-                <button className="w-10 h-10 rounded-full border border-border-subtle flex items-center justify-center text-text-muted hover:text-text-main hover:border-text-main transition-all bg-bg-card">
+                <button 
+                   onClick={handleDeptNext}
+                   disabled={(deptPage + 1) * deptsPerPage >= DEPARTMENTS.length}
+                   className={`w-10 h-10 rounded-full border border-border-subtle flex items-center justify-center transition-all bg-bg-card ${(deptPage + 1) * deptsPerPage >= DEPARTMENTS.length ? 'text-gray-300 cursor-not-allowed' : 'text-text-muted hover:text-text-main hover:border-text-main'}`}
+                >
                   <ArrowRight size={18} />
                 </button>
               </div>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {DEPARTMENTS.slice(0, 6).map((dept, index) => {
+                {DEPARTMENTS.slice(deptPage * deptsPerPage, (deptPage + 1) * deptsPerPage).map((dept, index) => {
                   const styles = [
                       { color: 'bg-[#2E2E2E]', pattern: 'grid' },
                       { color: 'bg-[#144EB6]', pattern: 'waves' },
@@ -476,12 +503,25 @@ const App = () => {
                   );
                 })}
             </div>
+            
+            <div className="mt-6 flex justify-center gap-2">
+                {Array.from({ length: Math.ceil(DEPARTMENTS.length / deptsPerPage) }).map((_, i) => (
+                    <div 
+                        key={i} 
+                        className={`h-1.5 rounded-full transition-all ${i === deptPage ? 'w-6 bg-primary' : 'w-2 bg-gray-200'}`} 
+                    />
+                ))}
+            </div>
          </div>
       </div>
     </div>
   );
 
   const renderAppView = () => {
+    if (view === 'about') {
+        return <AboutPage />;
+    }
+
     if (view === 'library') {
       return <LibraryPage initialSearchTerm={librarySearchTerm} />;
     }

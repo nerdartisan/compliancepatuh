@@ -24,7 +24,8 @@ import {
   History,
   List,
   Info,
-  TrendingUp
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 
 export { 
@@ -51,5 +52,6 @@ export {
   History,
   List,
   Info,
-  TrendingUp
+  TrendingUp,
+  Zap
 };
