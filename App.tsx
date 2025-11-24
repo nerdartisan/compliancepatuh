@@ -502,7 +502,20 @@ const App = () => {
               docId={activeCitation.id}
               onClose={() => setActiveCitation(null)}
               onViewDoc={(id) => {
-                setSelectedDocId(id);
+                const doc = MOCK_DOCUMENTS.find(d => d.id === id);
+                if (doc) {
+                    let pageNum = 1;
+                    // Regex to find page number in strings like "Section 14, pg. 89" or "Page 42"
+                    const pageMatch = doc.pageReference?.match(/(?:page|pg\.?|p\.?)\s*(\d+)/i);
+                    if (pageMatch) {
+                        pageNum = parseInt(pageMatch[1]);
+                    }
+                    
+                    // Simulate opening a PDF at a specific page.
+                    // Using a realistic-looking placeholder URL for the BNM context.
+                    const pdfUrl = `https://www.bnm.gov.my/documents/20124/${doc.id}.pdf#page=${pageNum}`;
+                    window.open(pdfUrl, '_blank');
+                }
                 setActiveCitation(null);
               }}
             />
