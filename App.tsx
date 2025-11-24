@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewMode, ChatMessage, ComplianceDocument } from './types';
 import { MOCK_DOCUMENTS, INITIAL_SUGGESTIONS } from './constants';
@@ -186,6 +185,7 @@ const App = () => {
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
   
   const [isLandingSearchFocused, setIsLandingSearchFocused] = useState(false);
+  const [landingSearchMode, setLandingSearchMode] = useState<'chat' | 'search'>('chat');
   const landingSearchRef = useRef<HTMLDivElement>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -244,6 +244,24 @@ const App = () => {
 
     setMessages(prev => [...prev, aiMsg]);
     setIsProcessing(false);
+  };
+
+  const handleLandingSubmit = () => {
+    const queryText = input.trim();
+    if (!queryText) return;
+
+    if (landingSearchMode === 'chat') {
+        handleSearch(queryText);
+    } else {
+        // Search Mode logic
+        if (!recentSearches.includes(queryText)) {
+            setRecentSearches(prev => [queryText, ...prev].slice(0, 5));
+        }
+        setLibrarySearchTerm(queryText);
+        setView('library');
+        setInput('');
+        setIsLandingSearchFocused(false);
+    }
   };
 
   const handleDocumentSelect = (docId: string) => {
@@ -315,14 +333,14 @@ const App = () => {
              <div className="px-6 pt-3 pb-1">
                <textarea 
                  className="w-full text-xl md:text-2xl text-text-main placeholder:text-gray-300 resize-none outline-none bg-transparent h-14 font-light leading-relaxed"
-                 placeholder="Send a message..."
+                 placeholder={landingSearchMode === 'chat' ? "Send a message..." : "Search for documents..."}
                  value={input}
                  onChange={(e) => setInput(e.target.value)}
                  onFocus={() => setIsLandingSearchFocused(true)}
                  onKeyDown={(e) => {
                    if (e.key === 'Enter' && !e.shiftKey) {
                      e.preventDefault();
-                     handleSearch();
+                     handleLandingSubmit();
                    }
                  }}
                />
@@ -330,11 +348,17 @@ const App = () => {
              
              <div className="flex items-center justify-between px-4 pb-2 mt-2">
                <div className="flex items-center gap-2 bg-bg-main p-1.5 rounded-full">
-                 <button className="bg-bg-card shadow-sm text-text-main px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2">
-                   <Sparkles size={14} className="text-primary" />
+                 <button 
+                   onClick={() => setLandingSearchMode('chat')}
+                   className={`px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${landingSearchMode === 'chat' ? 'bg-bg-card shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                 >
+                   <Sparkles size={14} className={landingSearchMode === 'chat' ? "text-primary" : "text-gray-400"} />
                    AI Chat
                  </button>
-                 <button onClick={() => setView('library')} className="text-text-muted px-4 py-2 rounded-full text-sm font-medium hover:text-text-main transition-all flex items-center gap-2 hover:bg-gray-200/50">
+                 <button 
+                   onClick={() => setLandingSearchMode('search')}
+                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${landingSearchMode === 'search' ? 'bg-bg-card shadow-sm text-text-main' : 'text-text-muted hover:text-text-main hover:bg-gray-200/50'}`}
+                 >
                    <Search size={14} />
                    Search
                  </button>
@@ -346,7 +370,7 @@ const App = () => {
                     <span>Filters</span>
                  </button>
                  <button 
-                   onClick={() => handleSearch()}
+                   onClick={() => handleLandingSubmit()}
                    disabled={!input.trim()}
                    className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:scale-105"
                  >
@@ -360,8 +384,19 @@ const App = () => {
                <SearchDropdown 
                  recentSearches={recentSearches}
                  onSearch={(query) => {
-                   handleSearch(query);
-                   setIsLandingSearchFocused(false);
+                   // If clicking a suggestion, treat it like a submit based on current mode
+                   setInput(query);
+                   if (landingSearchMode === 'chat') {
+                       handleSearch(query);
+                   } else {
+                       if (!recentSearches.includes(query)) {
+                           setRecentSearches(prev => [query, ...prev].slice(0, 5));
+                       }
+                       setLibrarySearchTerm(query);
+                       setView('library');
+                       setInput('');
+                       setIsLandingSearchFocused(false);
+                   }
                  }}
                  onClearRecent={() => setRecentSearches([])}
                  query={input}
