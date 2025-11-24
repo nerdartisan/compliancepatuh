@@ -1,3 +1,4 @@
+
 export enum DocumentType {
   REGULATION = 'Regulation',
   INTERNAL_POLICY = 'Internal Policy',
@@ -40,4 +41,4 @@ export interface SearchState {
   results: ChatMessage[];
 }
 
-export type ViewMode = 'landing' | 'search' | 'library' | 'graph';
+export type ViewMode = 'landing' | 'search' | 'library' | 'graph' | 'advanced-search';

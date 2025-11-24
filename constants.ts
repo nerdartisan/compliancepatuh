@@ -1,13 +1,14 @@
 
-import { ComplianceDocument, DocumentType, ChatSession, ChatMessage } from './types';
+import { ComplianceDocument, DocumentType, ChatMessage } from './types';
 
 export const INITIAL_SUGGESTIONS = [
-  "What are the retention requirements for transaction logs in the EU?",
-  "Compare our internal AML policy against the latest FATF guidelines.",
-  "Identify conflicting instructions regarding third-party risk assessment.",
-  "Explain the capital buffer requirements under Basel III for our Asia specifics."
+  "What are the cloud adoption requirements under RMBIT?",
+  "Summarize the e-KYC requirements for digital onboarding.",
+  "Identify conflicting instructions regarding outsourcing arrangements.",
+  "Explain the capital adequacy framework for Islamic banks under BNM."
 ];
 
+// Keeping the user's specific department list as requested in previous turns
 export const DEPARTMENTS: string[] = [
   "Jabatan Saluran Fizikal", "Jabatan Saluran Digital", "Jabatan Pengurusan Produk & Pemasaran",
   "Jabatan Pengurusan Caruman", "Jabatan Pengurusan Transaksi", "Jabatan Pematuhan Operasi", "Cawangan KWSP",
@@ -23,128 +24,144 @@ export const DEPARTMENTS: string[] = [
 ];
 
 export const POPULAR_SEARCHES = [
-  "Fiqh",
-  "مواقيت الصلاة",
-  "Al-Rissala",
-  "Ibn Al-Jawzi",
-  "Mudarabah Guidelines",
-  "Zakat Calculation"
+  "RMiT",
+  "AML/CFT Policy",
+  "FSA 2013",
+  "e-KYC",
+  "Outsourcing",
+  "Cloud Technology"
 ];
 
 export const POPULAR_COLLECTIONS = [
-  "Quranic Sciences",
-  "Hadith Sciences",
-  "Fiqh",
-  "Islamic Theology",
-  "Risk Management",
-  "Operational Compliance"
+  "Technology Risk",
+  "Financial Crime",
+  "Governance (FSA)",
+  "Consumer Protection",
+  "Shariah Governance",
+  "Payment Systems"
 ];
 
-// Mock Corpus - In a real app, this would be in a Vector DB
+// Mock Corpus - BNM Guidelines Data
 export const MOCK_DOCUMENTS: ComplianceDocument[] = [
   {
-    id: "doc-001",
-    title: "Global Anti-Money Laundering Policy v4.2",
-    source: "Internal Risk Committee",
-    type: DocumentType.INTERNAL_POLICY,
-    region: "Global",
+    id: "BNM-RMiT-2020",
+    title: "Risk Management in Technology (RMiT)",
+    source: "Bank Negara Malaysia",
+    type: DocumentType.REGULATION,
+    region: "Malaysia",
     department: "Jabatan Pengurusan Risiko",
-    lastUpdated: "2024-01-15",
-    tags: ["AML", "Financial Crime", "KYC"],
-    summary: "Sets forth the global standards for preventing money laundering and terrorist financing.",
+    lastUpdated: "2020-06-19",
+    tags: ["Technology Risk", "Cybersecurity", "Governance"],
+    summary: "Sets out the requirements for financial institutions to maintain cyber resilience and manage technology risk.",
     content: `
-      SECTION 4: CUSTOMER DUE DILIGENCE (CDD)
-      4.1 Standard Due Diligence: All new customers must undergo identity verification before account activation. Acceptable IDs include government-issued passports and national identity cards.
-      4.2 Enhanced Due Diligence (EDD): Required for Politically Exposed Persons (PEPs) and customers from High-Risk Jurisdictions. EDD must include Source of Wealth (SoW) verification.
+      PART B: TECHNOLOGY RISK MANAGEMENT FRAMEWORK
+      10.1 Governance: The Board generally designates a board-level committee (e.g. BRMC) to support the Board in the oversight of technology-related matters.
       
-      SECTION 7: DATA RETENTION
-      7.1 Transaction Records: All transaction data, including SWIFT messages and internal transfers, must be retained for a minimum of 7 years from the date of the transaction.
-      7.2 KYC Documents: Identification documents must be retained for 5 years after the business relationship has ended.
+      10.5 Cloud Services: Financial institutions must ensure that the adoption of cloud services does not compromise the security and confidentiality of customer information. 
+      (a) A risk assessment must be performed prior to cloud adoption.
+      (b) Multi-factor authentication (MFA) is mandatory for all privileged access to cloud infrastructure.
       
-      SECTION 9: REPORTING
-      9.1 Suspicious Activity Reports (SARs): Employees must file a SAR within 24 hours of identifying suspicious behavior. Failure to report is a gross misconduct offense.
+      APPENDIX 3: CYBER RESILIENCE
+      Financial institutions must establish a Cyber Incident Response Plan (CIRP) that is tested at least annually.
     `
   },
   {
-    id: "doc-002",
-    title: "GDPR Regulation (EU) 2016/679 - Article 5 & 17",
-    source: "European Parliament",
+    id: "BNM-AML-CFT-2024",
+    title: "Anti-Money Laundering (AML/CFT) - Banking & DTIs",
+    source: "Bank Negara Malaysia",
     type: DocumentType.REGULATION,
-    region: "EU",
-    department: "Jabatan Undang-Undang",
-    lastUpdated: "2018-05-25",
-    tags: ["Privacy", "Data Protection", "Compliance"],
-    summary: "General Data Protection Regulation principles regarding data minimization and right to erasure.",
-    content: `
-      Article 5: Principles relating to processing of personal data
-      1. Personal data shall be:
-      (c) adequate, relevant and limited to what is necessary in relation to the purposes for which they are processed ('data minimization');
-      (e) kept in a form which permits identification of data subjects for no longer than is necessary for the purposes for which the personal data are processed.
-
-      Article 17: Right to erasure ('right to be forgotten')
-      1. The data subject shall have the right to obtain from the controller the erasure of personal data concerning him or her without undue delay...
-      3. Paragraphs 1 and 2 shall not apply to the extent that processing is necessary:
-      (b) for compliance with a legal obligation which requires processing by Union or Member State law...
-    `
-  },
-  {
-    id: "doc-003",
-    title: "US Bank Secrecy Act (BSA) - Recordkeeping",
-    source: "US Treasury / FinCEN",
-    type: DocumentType.REGULATION,
-    region: "USA",
+    region: "Malaysia",
     department: "Jabatan Pematuhan Operasi",
-    lastUpdated: "2023-11-01",
-    tags: ["AML", "Recordkeeping", "Regulatory"],
-    summary: "Establishes recordkeeping and reporting requirements for national banks.",
+    lastUpdated: "2024-02-05",
+    tags: ["AML", "CFT", "Compliance"],
+    summary: "Requirements for the identification and verification of customers and beneficial owners.",
     content: `
-      Subpart C - Reports Required To Be Made
-      (1) A bank shall file a Suspicious Activity Report (SAR) with FinCEN regarding any suspicious transaction relevant to a possible violation of law or regulation.
+      SECTION 14: CUSTOMER DUE DILIGENCE (CDD)
+      14.1 Reporting Institutions must conduct CDD on customers when:
+      (a) establishing a business relationship;
+      (b) carrying out a cash transaction exceeding RM25,000;
+      (c) there is a suspicion of money laundering.
       
-      Subpart D - Records Required To Be Maintained
-      (a) Retention period. All records that are required to be retained by this part shall be retained for a period of five years. All such records shall be filed or stored in such a way as to be accessible within a reasonable period of time.
-      (b) Nature of records. This includes checks, drafts, and money orders drawn on the bank or issued and payable by it.
+      SECTION 27: POLITICALLY EXPOSED PERSONS (PEPs)
+      27.2 Enhanced Due Diligence (EDD) is required for all foreign PEPs and high-risk domestic PEPs. Approval from Senior Management is required to establish the relationship.
     `
   },
   {
-    id: "doc-004",
-    title: "APAC Region Operational Risk Guidelines",
-    source: "APAC Operations Head",
+    id: "BNM-eKYC-2020",
+    title: "Electronic Know-Your-Customer (e-KYC)",
+    source: "Bank Negara Malaysia",
     type: DocumentType.GUIDELINE,
-    region: "APAC",
-    department: "Jabatan Audit Dalaman",
-    lastUpdated: "2023-09-20",
-    tags: ["Operational Risk", "Audit", "APAC"],
-    summary: "Operational guidelines specific to the Asia-Pacific subsidiaries.",
+    region: "Malaysia",
+    department: "Jabatan Digital Security",
+    lastUpdated: "2020-06-30",
+    tags: ["Digital Onboarding", "Identity", "Technology"],
+    summary: "Enables digital onboarding of customers via mobile and web channels using biometrics.",
     content: `
-      3.1 Digital Archiving
-      For all operational logs generated in Singapore and Hong Kong, dual-site redundancy is required.
+      paragraph 8: FALSE ACCEPTANCE RATE (FAR)
+      8.1 Financial institutions must ensure that the e-KYC solution has a False Acceptance Rate (FAR) of no more than 5%.
       
-      3.2 Retention Conflicts
-      Where local regulation exceeds Group Policy, local regulation prevails. For example, Hong Kong requirements for 7-year retention on securities trading override the global 5-year baseline.
+      paragraph 12: LIVENESS DETECTION
+      12.3 The solution must detect and prevent presentation attacks (e.g. photos of photos, video replays, or deepfakes).
       
-      3.3 Audit Trails
-      Audit trails for manual overrides must be preserved indefinitely until a platform decommissioning review is conducted.
+      paragraph 15: AUDIT TRAIL
+      15.1 All images, videos, and data captured during the e-KYC process must be audit-logged and retained for a minimum of 7 years.
+    `
+  },
+  {
+    id: "FSA-2013",
+    title: "Financial Services Act 2013 (FSA)",
+    source: "Parliament of Malaysia",
+    type: DocumentType.REGULATION,
+    region: "Malaysia",
+    department: "Jabatan Undang-Undang",
+    lastUpdated: "2013-06-30",
+    tags: ["Legislation", "Governance", "Licensing"],
+    summary: "The primary legislation governing the conduct and supervision of financial institutions in Malaysia.",
+    content: `
+      PART IV: CONDUCT OF BUSINESS
+      Section 123: Prohibited Business Conduct
+      (1) No person shall engage in conduct that is misleading, deceptive, or unfair in relation to the provision of a financial service.
+      
+      Section 133: Secrecy
+      (1) No director or officer of a financial institution shall disclose any information or document relating to the affairs or account of any customer.
+    `
+  },
+  {
+    id: "BNM-OUTSOURCING",
+    title: "Outsourcing Policy Document",
+    source: "Bank Negara Malaysia",
+    type: DocumentType.INTERNAL_POLICY,
+    region: "Malaysia",
+    department: "Jabatan Integriti & Tadbir Urus",
+    lastUpdated: "2023-12-28",
+    tags: ["Outsourcing", "Vendor Management", "Risk"],
+    summary: "Guidelines on managing risks associated with material outsourcing arrangements.",
+    content: `
+      8.1 MATERIAL OUTSOURCING
+      Financial institutions must obtain BNM's written approval before entering into a new material outsourcing arrangement or significantly modifying an existing one.
+      
+      10.2 SERVICE LEVEL AGREEMENTS (SLA)
+      SLAs must clearly define the performance standards, security requirements, and the right to audit the service provider.
     `
   }
 ];
 
 export const MOCK_CHAT_HISTORY: { [date: string]: { id: string; title: string }[] } = {
   "Today": [
-    { id: "chat-1", title: "what is ijma'" },
-    { id: "chat-2", title: "what is mudarabah" }
+    { id: "chat-1", title: "RMiT cloud requirements" },
+    { id: "chat-2", title: "e-KYC FAR limits" }
   ],
   "Yesterday": [
-    { id: "chat-3", title: "What does the ayah Let there be..." }
+    { id: "chat-3", title: "Outsourcing approval process" }
   ],
   "5 Days Ago": [
-    { id: "chat-4", title: "ijma' sahabah to compile Al-Qur'an" }
+    { id: "chat-4", title: "FSA 2013 Secrecy provisions" }
   ],
   "Tuesday, November 18, 2025": [
-    { id: "chat-5", title: "how many types of ijma" },
-    { id: "chat-6", title: "آخر من رآه له عهد عند الله" }
+    { id: "chat-5", title: "AML/CFT retention period" },
+    { id: "chat-6", title: "Cyber incident reporting timeline" }
   ],
   "Sunday, November 16, 2025": [
-    { id: "chat-7", title: "mudarabah from jurisct views" }
+    { id: "chat-7", title: "Guideline on Data Management" }
   ]
 };

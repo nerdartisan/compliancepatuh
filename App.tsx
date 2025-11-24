@@ -1,10 +1,12 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewMode, ChatMessage, ComplianceDocument } from './types';
-import { MOCK_DOCUMENTS, INITIAL_SUGGESTIONS } from './constants';
+import { MOCK_DOCUMENTS, INITIAL_SUGGESTIONS, DEPARTMENTS } from './constants';
 import AppHeader from './components/AppHeader';
 import ChatHistorySidebar from './components/ChatHistorySidebar';
 import LibraryPage from './components/LibraryPage';
 import SearchDropdown from './components/SearchDropdown';
+import AdvancedSearchPage from './components/AdvancedSearchPage';
 import { queryComplianceEngine } from './services/geminiService';
 import { 
   ArrowRight, 
@@ -163,7 +165,7 @@ const CollectionCard = ({ title, count, colorClass, pattern = 'default' }: { tit
     <div className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay" style={getPatternStyle(pattern)}></div>
     
     <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
-      <h3 className="font-serif text-2xl mb-1 font-medium tracking-wide">{title}</h3>
+      <h3 className="font-serif text-lg leading-tight mb-2 font-medium tracking-wide">{title}</h3>
       <p className="text-sm opacity-80 font-light flex items-center gap-1">
         <FileText size={12} />
         {count}
@@ -290,7 +292,7 @@ const App = () => {
         <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto text-white/90 text-sm font-medium">
           {/* Left Side */}
           <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2 font-serif text-lg font-bold text-white">
+              <div className="flex items-center gap-2 font-serif text-lg font-bold text-white cursor-pointer" onClick={() => setView('landing')}>
                   <span className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold">L</span>
                   Lexicon
               </div>
@@ -429,8 +431,8 @@ const App = () => {
          <div className="max-w-7xl mx-auto bg-bg-card rounded-[2.5rem] shadow-xl border border-border-subtle p-8 md:p-12">
             <div className="flex items-center justify-between mb-10 text-text-main">
               <div className="flex items-center gap-4">
-                <h2 className="font-serif font-bold text-3xl text-text-main">Collections</h2>
-                <span className="bg-gray-200 text-text-muted text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">6 Categories</span>
+                <h2 className="font-serif font-bold text-3xl text-text-main">Departments</h2>
+                <span className="bg-gray-200 text-text-muted text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">{DEPARTMENTS.length} Units</span>
               </div>
               <div className="flex gap-3">
                 <button className="w-10 h-10 rounded-full border border-border-subtle flex items-center justify-center text-text-muted hover:text-text-main hover:border-text-main transition-all bg-bg-card">
@@ -443,12 +445,29 @@ const App = () => {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <CollectionCard title="Global Regulations" count="320 Texts" colorClass="bg-[#2E2E2E]" pattern="grid" />
-                <CollectionCard title="Internal Policies" count="1,294 Texts" colorClass="bg-[#666666]" pattern="scales" />
-                <CollectionCard title="Audit Guidelines" count="888 Texts" colorClass="bg-[#343A40]" pattern="waves" />
-                <CollectionCard title="Risk History" count="475 Texts" colorClass="bg-[#144EB6]" pattern="dots" />
-                <CollectionCard title="Legal Opinions" count="15 Texts" colorClass="bg-text-muted" pattern="grid" />
-                <CollectionCard title="Operational Docs" count="69 Texts" colorClass="bg-[#212529]" pattern="scales" />
+                {DEPARTMENTS.slice(0, 6).map((dept, index) => {
+                  const styles = [
+                      { color: 'bg-[#2E2E2E]', pattern: 'grid' },
+                      { color: 'bg-[#144EB6]', pattern: 'waves' },
+                      { color: 'bg-[#343A40]', pattern: 'scales' },
+                      { color: 'bg-[#666666]', pattern: 'dots' },
+                      { color: 'bg-[#212529]', pattern: 'grid' },
+                      { color: 'bg-[#495057]', pattern: 'scales' }
+                  ];
+                  const style = styles[index % styles.length];
+                  // Generate a pseudo-random count based on name length
+                  const count = Math.floor((dept.length * 123) % 500) + 50; 
+                  
+                  return (
+                    <CollectionCard 
+                      key={dept} 
+                      title={dept} 
+                      count={`${count} Docs`} 
+                      colorClass={style.color} 
+                      pattern={style.pattern as any} 
+                    />
+                  );
+                })}
             </div>
          </div>
       </div>
@@ -458,6 +477,10 @@ const App = () => {
   const renderAppView = () => {
     if (view === 'library') {
       return <LibraryPage initialSearchTerm={librarySearchTerm} />;
+    }
+
+    if (view === 'advanced-search') {
+      return <AdvancedSearchPage />;
     }
 
     // Default to search view

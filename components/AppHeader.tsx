@@ -62,7 +62,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
     <header className="flex-shrink-0 h-[72px] bg-bg-card border-b border-border-subtle flex items-center justify-between px-4 md:px-6 text-text-main relative z-50">
       {/* Left side: Logo & Nav */}
       <div className="flex items-center gap-8">
-        <h1 className="font-serif text-2xl font-bold text-primary">Lexicon</h1>
+        <h1 className="font-serif text-2xl font-bold text-primary cursor-pointer" onClick={() => setView('landing')}>Lexicon</h1>
         <div className="hidden md:flex items-center gap-6">
           {navItems.map(item => (
              <button 
@@ -78,41 +78,46 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
         </div>
       </div>
       
-      {/* Center: Search bar (desktop only) */}
-      <div className="hidden lg:flex flex-1 justify-center px-8" ref={dropdownRef}>
-        <div className="relative w-full max-w-lg">
-          <div className={`relative flex items-center w-full bg-bg-main border ${isFocused ? 'border-primary ring-1 ring-primary/50' : 'border-border-subtle'} rounded-xl transition-all`}>
-             <input 
-                type="text" 
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onKeyDown={handleInputSubmit}
-                placeholder="Search for a text... (⌘ + K)"
-                className="flex-1 bg-transparent py-2.5 pl-10 pr-4 text-sm placeholder:text-text-muted focus:outline-none"
-              />
-              <Search size={18} className="absolute left-3.5 text-text-muted" />
-              
-              {/* Right side 'Advanced Search' button inside input container to match screenshot style */}
-              <button className="flex items-center gap-1.5 mr-2 px-3 py-1 text-xs font-medium text-text-main bg-white border border-border-subtle rounded-lg hover:bg-gray-50 transition-colors">
-                <Globe size={12} />
-                Advanced Search
-              </button>
-          </div>
+      {/* Center: Search bar (desktop only) - HIDDEN ON ADVANCED SEARCH PAGE */}
+      {view !== 'advanced-search' && (
+        <div className="hidden lg:flex flex-1 justify-center px-8" ref={dropdownRef}>
+          <div className="relative w-full max-w-lg">
+            <div className={`relative flex items-center w-full bg-bg-main border ${isFocused ? 'border-primary ring-1 ring-primary/50' : 'border-border-subtle'} rounded-xl transition-all`}>
+              <input 
+                  type="text" 
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onFocus={() => setIsFocused(true)}
+                  onKeyDown={handleInputSubmit}
+                  placeholder="Search for a text... (⌘ + K)"
+                  className="flex-1 bg-transparent py-2.5 pl-10 pr-4 text-sm placeholder:text-text-muted focus:outline-none"
+                />
+                <Search size={18} className="absolute left-3.5 text-text-muted" />
+                
+                {/* Right side 'Advanced Search' button inside input container */}
+                <button 
+                  onClick={() => setView('advanced-search')}
+                  className="flex items-center gap-1.5 mr-2 px-3 py-1 text-xs font-medium text-text-main bg-white border border-border-subtle rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <Globe size={12} />
+                  Advanced Search
+                </button>
+            </div>
 
-          {/* Search Dropdown */}
-          {isFocused && (
-            <SearchDropdown 
-              recentSearches={recentSearches}
-              onSearch={handleSuggestionClick}
-              onClearRecent={onClearRecent}
-              query={inputValue}
-              documents={MOCK_DOCUMENTS}
-              onResultClick={handleDocumentClick}
-            />
-          )}
+            {/* Search Dropdown */}
+            {isFocused && (
+              <SearchDropdown 
+                recentSearches={recentSearches}
+                onSearch={handleSuggestionClick}
+                onClearRecent={onClearRecent}
+                query={inputValue}
+                documents={MOCK_DOCUMENTS}
+                onResultClick={handleDocumentClick}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Right side: Controls */}
       <div className="flex items-center gap-2 md:gap-4">
