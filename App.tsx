@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewMode, ChatMessage, ComplianceDocument } from './types';
 import { MOCK_DOCUMENTS, INITIAL_SUGGESTIONS, DEPARTMENTS } from './constants';
@@ -59,7 +58,7 @@ const CitationPopup = ({
   if (!doc) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div 
         className="bg-bg-card rounded-2xl shadow-2xl border border-border-subtle w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
@@ -290,14 +289,19 @@ const App = () => {
   };
   
   const renderLanding = () => (
-    <div className="flex flex-col h-full w-full overflow-y-auto bg-bg-main font-sans w-full">
-      <div className="w-full bg-text-main pb-32 relative flex-shrink-0 transition-all duration-500 z-30">
-        <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto text-white/90 text-sm font-medium">
+    <div className="flex flex-col h-full w-full overflow-y-auto bg-bg-main font-sans w-full relative">
+      {/* 
+        HERO SECTION 
+        Removed z-0 and transition-all to prevent stacking context trapping search dropdown.
+        This allows z-50 child (search) to render above z-30 sibling (departments).
+      */}
+      <div className="w-full bg-text-main pb-32 relative flex-shrink-0">
+        <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto text-white/90 text-sm font-medium">
           {/* Left Side */}
           <div className="flex items-center gap-8">
               <div className="flex items-center gap-2 font-serif text-lg font-bold text-white cursor-pointer" onClick={() => setView('landing')}>
-                  <span className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold">L</span>
-                  Lexicon
+                  <span className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold">i</span>
+                  i-Patuh
               </div>
               <div className="hidden md:flex items-center gap-8">
                   <button onClick={() => setView('library')} className="hover:text-white transition-colors">Browse</button>
@@ -318,7 +322,7 @@ const App = () => {
           </div>
         </nav>
 
-        <div className="relative z-30 flex flex-col items-center justify-center pt-8 md:pt-16 px-4">
+        <div className="relative z-50 flex flex-col items-center justify-center pt-8 md:pt-16 px-4">
           <h1 className="font-serif text-4xl md:text-6xl text-white text-center mb-6 tracking-tight leading-tight">
             AI-Powered Compliance Research
           </h1>
@@ -328,11 +332,12 @@ const App = () => {
 
           <button className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-full backdrop-blur-md transition-all text-sm mb-10 border border-white/20 group">
             <span className="w-5 h-5 bg-white text-primary rounded-full flex items-center justify-center text-[8px] pl-0.5 group-hover:scale-110 transition-transform">▶</span> 
-            How Lexicon Works - 2:00
+            How i-Patuh Works - 2:00
           </button>
 
+          {/* Search Container: z-50 to ensure dropdown goes over Departments card */}
           <div 
-            className="w-full max-w-3xl bg-bg-card rounded-[2rem] p-3 shadow-2xl shadow-black/20 relative group focus-within:ring-4 focus-within:ring-primary/20 transition-all z-20"
+            className="w-full max-w-3xl bg-bg-card rounded-[2rem] p-3 shadow-2xl shadow-black/20 relative group focus-within:ring-4 focus-within:ring-primary/20 transition-all z-50"
             ref={landingSearchRef}
           >
              <div className="px-6 pt-3 pb-1">
@@ -384,24 +389,19 @@ const App = () => {
                </div>
              </div>
 
-             {/* Search Dropdown for Landing Page */}
-             {isLandingSearchFocused && (
+             {/* Search Dropdown for Landing Page - ONLY visible in Search Mode */}
+             {isLandingSearchFocused && landingSearchMode === 'search' && (
                <SearchDropdown 
                  recentSearches={recentSearches}
                  onSearch={(query) => {
-                   // If clicking a suggestion, treat it like a submit based on current mode
                    setInput(query);
-                   if (landingSearchMode === 'chat') {
-                       handleSearch(query);
-                   } else {
-                       if (!recentSearches.includes(query)) {
-                           setRecentSearches(prev => [query, ...prev].slice(0, 5));
-                       }
-                       setLibrarySearchTerm(query);
-                       setView('library');
-                       setInput('');
-                       setIsLandingSearchFocused(false);
+                   if (!recentSearches.includes(query)) {
+                       setRecentSearches(prev => [query, ...prev].slice(0, 5));
                    }
+                   setLibrarySearchTerm(query);
+                   setView('library');
+                   setInput('');
+                   setIsLandingSearchFocused(false);
                  }}
                  onClearRecent={() => setRecentSearches([])}
                  query={input}
@@ -411,7 +411,7 @@ const App = () => {
              )}
           </div>
           
-          <div className="flex flex-wrap justify-center gap-3 mt-8 relative z-10">
+          <div className="flex flex-wrap justify-center gap-3 mt-8 relative z-40">
             {[
               "Explain Policy", 
               "Find Regulation", 
@@ -430,7 +430,11 @@ const App = () => {
         </div>
       </div>
 
-      <div className="relative z-20 w-full px-4 md:px-8 pb-16 -mt-20">
+      {/* 
+        DEPARTMENTS / COLLECTIONS SECTION
+        z-30 to Ensure it sits ON TOP of the Hero Background (auto/0) but BELOW Search (z-50)
+      */}
+      <div className="relative z-30 w-full px-4 md:px-8 pb-16 -mt-20">
          <div className="max-w-7xl mx-auto bg-bg-card rounded-[2.5rem] shadow-xl border border-border-subtle p-8 md:p-12">
             <div className="flex items-center justify-between mb-10 text-text-main">
               <div className="flex items-center gap-4">
@@ -512,7 +516,6 @@ const App = () => {
                     }
                     
                     // Simulate opening a PDF at a specific page.
-                    // Using a realistic-looking placeholder URL for the BNM context.
                     const pdfUrl = `https://www.bnm.gov.my/documents/20124/${doc.id}.pdf#page=${pageNum}`;
                     window.open(pdfUrl, '_blank');
                 }
@@ -527,7 +530,7 @@ const App = () => {
                 <div className="w-16 h-16 bg-bg-card rounded-2xl shadow-sm border border-border-subtle flex items-center justify-center mb-6">
                     <Sparkles size={32} className="text-primary" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-serif font-bold text-text-main mb-2">Welcome to Lexicon!</h1>
+                <h1 className="text-3xl md:text-4xl font-serif font-bold text-text-main mb-2">Welcome to i-Patuh!</h1>
                 <p className="text-text-muted text-lg font-light mb-10">Type your first question below</p>
 
                 {/* Suggestion Grid */}
@@ -588,7 +591,7 @@ const App = () => {
                     <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                       {msg.role === 'model' && (
                         <div className="w-8 h-8 min-w-[32px] rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs">
-                          L
+                          i
                         </div>
                       )}
                       
@@ -606,7 +609,7 @@ const App = () => {
                   {isProcessing && (
                     <div className="flex gap-4">
                       <div className="w-8 h-8 rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs animate-pulse">
-                          L
+                          i
                         </div>
                         <div className="flex items-center gap-2 text-text-muted text-sm">
                           <span className="animate-bounce">●</span>

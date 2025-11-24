@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Moon, User, Globe } from './Icons';
 import { ViewMode, ComplianceDocument } from '../types';
@@ -62,7 +61,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
     <header className="flex-shrink-0 h-[72px] bg-bg-card border-b border-border-subtle flex items-center justify-between px-4 md:px-6 text-text-main relative z-50">
       {/* Left side: Logo & Nav */}
       <div className="flex items-center gap-8">
-        <h1 className="font-serif text-2xl font-bold text-primary cursor-pointer" onClick={() => setView('landing')}>Lexicon</h1>
+        <h1 className="font-serif text-2xl font-bold text-primary cursor-pointer" onClick={() => setView('landing')}>i-Patuh</h1>
         <div className="hidden md:flex items-center gap-6">
           {navItems.map(item => (
              <button 

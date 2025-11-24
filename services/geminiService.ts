@@ -23,7 +23,7 @@ ${doc.content}
   }).join('\n');
 
   const systemInstruction = `
-    You are Lexicon, an advanced Compliance Research Engine.
+    You are i-Patuh, an advanced Compliance Research Engine.
     Your goal is to provide authoritative, accurate, and cited answers to compliance questions.
     
     CRITICAL RULES:
