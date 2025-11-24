@@ -484,6 +484,8 @@ const App = () => {
     }
 
     // Default to search view
+    const isChatEmpty = messages.length === 0;
+
     return (
       <div className="flex-1 flex h-full w-full overflow-hidden">
         <ChatHistorySidebar 
@@ -504,76 +506,138 @@ const App = () => {
             />
           )}
 
-          {/* Main Chat Area */}
-          <div className="flex-1 overflow-y-auto p-6 lg:p-12">
-            <div className="max-w-4xl mx-auto space-y-8">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-                  {msg.role === 'model' && (
-                    <div className="w-8 h-8 min-w-[32px] rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs">
-                      L
+          {isChatEmpty ? (
+            // WELCOME / EMPTY STATE
+            <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-16 h-16 bg-bg-card rounded-2xl shadow-sm border border-border-subtle flex items-center justify-center mb-6">
+                    <Sparkles size={32} className="text-primary" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-serif font-bold text-text-main mb-2">Welcome to Lexicon!</h1>
+                <p className="text-text-muted text-lg font-light mb-10">Type your first question below</p>
+
+                {/* Suggestion Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8">
+                   {INITIAL_SUGGESTIONS.map((suggestion, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={() => handleSearch(suggestion)}
+                        className="bg-bg-card hover:bg-white border border-border-subtle hover:border-primary/50 hover:shadow-md p-4 rounded-xl text-left transition-all group h-full flex items-center"
+                      >
+                        <span className="text-sm font-medium text-text-main group-hover:text-primary transition-colors line-clamp-2">
+                          {suggestion}
+                        </span>
+                      </button>
+                   ))}
+                </div>
+
+                {/* Input Area (Welcome Mode) */}
+                <div className="w-full max-w-2xl bg-bg-card rounded-[24px] border border-border-subtle shadow-lg shadow-black/5 p-4 relative group focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                    <textarea 
+                        className="w-full bg-transparent text-base text-text-main placeholder:text-text-muted/50 resize-none outline-none h-12 p-1 font-serif"
+                        placeholder="Send a message..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                         onKeyDown={(e) => {
+                             if (e.key === 'Enter' && !e.shiftKey) {
+                               e.preventDefault();
+                               handleSearch();
+                             }
+                        }}
+                    />
+                    <div className="flex items-center justify-between mt-2">
+                        <button className="flex items-center gap-2 text-text-muted hover:text-text-main bg-bg-main px-3 py-1.5 rounded-full text-xs font-medium transition-colors border border-border-subtle">
+                             <Settings size={14} />
+                             <span>Filters</span>
+                        </button>
+                        <button 
+                             onClick={() => handleSearch()}
+                             disabled={!input.trim()}
+                             className="w-9 h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+                        >
+                            <ArrowRight size={18} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="mt-8 text-[10px] text-text-muted/60 uppercase tracking-widest font-semibold">
+                    AI can make mistakes. Check important info.
+                </div>
+            </div>
+          ) : (
+            // ACTIVE CHAT STATE
+            <>
+              {/* Main Chat Area */}
+              <div className="flex-1 overflow-y-auto p-6 lg:p-12">
+                <div className="max-w-4xl mx-auto space-y-8">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                      {msg.role === 'model' && (
+                        <div className="w-8 h-8 min-w-[32px] rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs">
+                          L
+                        </div>
+                      )}
+                      
+                      <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-bg-card px-6 py-4 rounded-2xl text-text-main border border-border-subtle' : ''}`}>
+                        {msg.role === 'model' ? (
+                          <div className="prose prose-stone max-w-none text-base font-serif">
+                            <FormattedText text={msg.content} onCitationClick={handleCitationClick} />
+                          </div>
+                        ) : (
+                          <p className="text-base font-serif">{msg.content}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {isProcessing && (
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs animate-pulse">
+                          L
+                        </div>
+                        <div className="flex items-center gap-2 text-text-muted text-sm">
+                          <span className="animate-bounce">●</span>
+                          <span className="animate-bounce delay-100">●</span>
+                          <span className="animate-bounce delay-200">●</span>
+                        </div>
                     </div>
                   )}
-                  
-                  <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-bg-card px-6 py-4 rounded-2xl text-text-main border border-border-subtle' : ''}`}>
-                     {msg.role === 'model' ? (
-                       <div className="prose prose-stone max-w-none text-base font-serif">
-                         <FormattedText text={msg.content} onCitationClick={handleCitationClick} />
-                       </div>
-                     ) : (
-                       <p className="text-base font-serif">{msg.content}</p>
-                     )}
+                  <div ref={bottomRef} />
+                </div>
+              </div>
+
+              {/* Input Bar (Sticky) */}
+              <div className="p-6 bg-bg-main/80 backdrop-blur-sm border-t border-border-subtle">
+                <div className="max-w-4xl mx-auto">
+                  <div className="relative bg-bg-card rounded-2xl p-2.5 shadow-lg shadow-black/5 border border-gray-300/80">
+                    <textarea 
+                      className="w-full text-base text-text-main placeholder:text-text-muted resize-none outline-none bg-transparent h-12 p-3 pr-24 font-serif"
+                      placeholder="Send a message..."
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSearch();
+                        }
+                      }}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <button className="flex items-center gap-2 text-text-muted border border-border-subtle px-3 py-1.5 rounded-lg text-sm hover:bg-bg-main transition-colors font-medium">
+                            <Settings size={14} />
+                            <span>Filters</span>
+                        </button>
+                        <button 
+                          onClick={() => handleSearch()}
+                          disabled={!input.trim()}
+                          className="w-9 h-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                        >
+                          <ArrowRight size={16} />
+                        </button>
+                    </div>
                   </div>
                 </div>
-              ))}
-              {isProcessing && (
-                <div className="flex gap-4">
-                   <div className="w-8 h-8 rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs animate-pulse">
-                      L
-                    </div>
-                    <div className="flex items-center gap-2 text-text-muted text-sm">
-                      <span className="animate-bounce">●</span>
-                      <span className="animate-bounce delay-100">●</span>
-                      <span className="animate-bounce delay-200">●</span>
-                    </div>
-                </div>
-              )}
-              <div ref={bottomRef} />
-            </div>
-          </div>
-
-          {/* Input Bar */}
-          <div className="p-6 bg-bg-main/80 backdrop-blur-sm border-t border-border-subtle">
-             <div className="max-w-4xl mx-auto">
-               <div className="relative bg-bg-card rounded-2xl p-2.5 shadow-lg shadow-black/5 border border-gray-300/80">
-                 <textarea 
-                   className="w-full text-base text-text-main placeholder:text-text-muted resize-none outline-none bg-transparent h-12 p-3 pr-24 font-serif"
-                   placeholder="Send a message..."
-                   value={input}
-                   onChange={(e) => setInput(e.target.value)}
-                   onKeyDown={(e) => {
-                     if (e.key === 'Enter' && !e.shiftKey) {
-                       e.preventDefault();
-                       handleSearch();
-                     }
-                   }}
-                 />
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <button className="flex items-center gap-2 text-text-muted border border-border-subtle px-3 py-1.5 rounded-lg text-sm hover:bg-bg-main transition-colors font-medium">
-                        <Settings size={14} />
-                        <span>Filters</span>
-                    </button>
-                    <button 
-                      onClick={() => handleSearch()}
-                      disabled={!input.trim()}
-                      className="w-9 h-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-                    >
-                      <ArrowRight size={16} />
-                    </button>
-                 </div>
-               </div>
-             </div>
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
