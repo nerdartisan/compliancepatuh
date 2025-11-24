@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Moon, User, Globe } from './Icons';
-import { ViewMode } from '../types';
+import { ViewMode, ComplianceDocument } from '../types';
 import SearchDropdown from './SearchDropdown';
+import { MOCK_DOCUMENTS } from '../constants';
 
 interface AppHeaderProps {
   view: ViewMode;
@@ -10,9 +11,10 @@ interface AppHeaderProps {
   onSearch: (query: string) => void;
   recentSearches: string[];
   onClearRecent: () => void;
+  onDocumentSelect?: (docId: string) => void;
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSearches, onClearRecent }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSearches, onClearRecent, onDocumentSelect }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
     setIsFocused(false);
     setInputValue('');
   };
+
+  const handleDocumentClick = (docId: string) => {
+    if (onDocumentSelect) {
+      onDocumentSelect(docId);
+    }
+    setIsFocused(false);
+    setInputValue('');
+  }
 
   return (
     <header className="flex-shrink-0 h-[72px] bg-bg-card border-b border-border-subtle flex items-center justify-between px-4 md:px-6 text-text-main relative z-50">
@@ -96,6 +106,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
               recentSearches={recentSearches}
               onSearch={handleSuggestionClick}
               onClearRecent={onClearRecent}
+              query={inputValue}
+              documents={MOCK_DOCUMENTS}
+              onResultClick={handleDocumentClick}
             />
           )}
         </div>

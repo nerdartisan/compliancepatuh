@@ -180,6 +180,7 @@ const App = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [librarySearchTerm, setLibrarySearchTerm] = useState('');
   
   const [activeCitation, setActiveCitation] = useState<{id: string, x: number, y: number} | null>(null);
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
@@ -245,6 +246,16 @@ const App = () => {
     setIsProcessing(false);
   };
 
+  const handleDocumentSelect = (docId: string) => {
+    // Find doc to get title for search term or just use ID
+    const doc = MOCK_DOCUMENTS.find(d => d.id === docId);
+    if (doc) {
+      setLibrarySearchTerm(doc.title);
+      setView('library');
+      setIsLandingSearchFocused(false);
+    }
+  };
+
   const handleCitationClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     const rect = (e.target as HTMLElement).getBoundingClientRect();
@@ -256,8 +267,8 @@ const App = () => {
   };
   
   const renderLanding = () => (
-    <div className="flex flex-col h-full w-full overflow-y-auto bg-bg-main font-sans">
-      <div className="w-full bg-text-main pb-32 relative flex-shrink-0 transition-all duration-500">
+    <div className="flex flex-col h-full w-full overflow-y-auto bg-bg-main font-sans w-full">
+      <div className="w-full bg-text-main pb-32 relative flex-shrink-0 transition-all duration-500 z-30">
         <nav className="relative z-10 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto text-white/90 text-sm font-medium">
           {/* Left Side */}
           <div className="flex items-center gap-8">
@@ -353,6 +364,9 @@ const App = () => {
                    setIsLandingSearchFocused(false);
                  }}
                  onClearRecent={() => setRecentSearches([])}
+                 query={input}
+                 documents={MOCK_DOCUMENTS}
+                 onResultClick={handleDocumentSelect}
                />
              )}
           </div>
@@ -408,7 +422,7 @@ const App = () => {
 
   const renderAppView = () => {
     if (view === 'library') {
-      return <LibraryPage />;
+      return <LibraryPage initialSearchTerm={librarySearchTerm} />;
     }
 
     // Default to search view
@@ -518,10 +532,11 @@ const App = () => {
           onSearch={handleSearch}
           recentSearches={recentSearches}
           onClearRecent={() => setRecentSearches([])}
+          onDocumentSelect={handleDocumentSelect}
         />
       }
       
-      <main className="flex-1 h-full overflow-hidden flex">
+      <main className="flex-1 h-full overflow-hidden flex w-full">
         {isLandingView ? renderLanding() : renderAppView()}
       </main>
     </div>

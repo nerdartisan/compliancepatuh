@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { MOCK_DOCUMENTS } from '../constants';
 import { ComplianceDocument } from '../types';
 import FilterSidebar from './FilterSidebar';
 import { Search, List } from './Icons';
+
+interface LibraryPageProps {
+  initialSearchTerm?: string;
+}
 
 const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
   <div className="border-b border-border-subtle py-4 flex justify-between items-start">
@@ -24,9 +29,16 @@ const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
 );
 
 
-const LibraryPage: React.FC = () => {
+const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '' }) => {
   const [documents, setDocuments] = useState<ComplianceDocument[]>(MOCK_DOCUMENTS);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
+
+  // Sync prop changes to state if needed (e.g. re-navigating)
+  useEffect(() => {
+    if (initialSearchTerm) {
+      setSearchTerm(initialSearchTerm);
+    }
+  }, [initialSearchTerm]);
 
   const filteredDocuments = documents.filter(doc =>
     doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -63,6 +75,11 @@ const LibraryPage: React.FC = () => {
           {filteredDocuments.map(doc => (
             <DocumentListItem key={doc.id} doc={doc} />
           ))}
+          {filteredDocuments.length === 0 && (
+            <div className="p-10 text-center text-text-muted">
+              No documents found matching "{searchTerm}"
+            </div>
+          )}
         </div>
       </div>
     </div>
