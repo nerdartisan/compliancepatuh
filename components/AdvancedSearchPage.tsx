@@ -1,14 +1,13 @@
-
 import React, { useState } from 'react';
 import { Search, ChevronRight, ArrowRight, ArrowLeft, LayoutGrid, List } from './Icons';
 
-const BookCover = ({ title, author, color, pattern }: { title: string, author: string, color: string, pattern: 'islamic-1' | 'islamic-2' | 'islamic-3' | 'islamic-4' }) => {
+const BookCover = ({ title, author, color, pattern }: { title: string, author: string, color: string, pattern: 'geometric-1' | 'geometric-2' | 'geometric-3' | 'geometric-4' }) => {
   const getPattern = () => {
     // CSS patterns for the covers
     switch(pattern) {
-      case 'islamic-1': return { backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '10px 10px' };
-      case 'islamic-2': return { backgroundImage: 'linear-gradient(45deg, #00000022 25%, transparent 25%, transparent 75%, #00000022 75%, #00000022), linear-gradient(45deg, #00000022 25%, transparent 25%, transparent 75%, #00000022 75%, #00000022)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' };
-      case 'islamic-3': return { backgroundImage: 'repeating-linear-gradient(45deg, #00000011 0, #00000011 1px, transparent 0, transparent 50%)', backgroundSize: '10px 10px' };
+      case 'geometric-1': return { backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '10px 10px' };
+      case 'geometric-2': return { backgroundImage: 'linear-gradient(45deg, #00000022 25%, transparent 25%, transparent 75%, #00000022 75%, #00000022), linear-gradient(45deg, #00000022 25%, transparent 25%, transparent 75%, #00000022 75%, #00000022)', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' };
+      case 'geometric-3': return { backgroundImage: 'repeating-linear-gradient(45deg, #00000011 0, #00000011 1px, transparent 0, transparent 50%)', backgroundSize: '10px 10px' };
       default: return { backgroundImage: 'linear-gradient(90deg, #00000011 1px, transparent 1px), linear-gradient(#00000011 1px, transparent 1px)', backgroundSize: '15px 15px' };
     }
   };
@@ -155,25 +154,25 @@ const AdvancedSearchPage = () => {
                     title="Financial Services Act 2013"
                     author="Laws of Malaysia"
                     color="bg-[#1A237E]"
-                    pattern="islamic-1"
+                    pattern="geometric-1"
                   />
                   <BookCover 
                     title="AML/CFT Policy"
                     author="Bank Negara Malaysia"
                     color="bg-[#B71C1C]"
-                    pattern="islamic-2"
+                    pattern="geometric-2"
                   />
                   <BookCover 
                     title="RMiT Guidelines"
                     author="Technology Risk"
                     color="bg-[#1B5E20]"
-                    pattern="islamic-3"
+                    pattern="geometric-3"
                   />
                   <BookCover 
                     title="e-Money Policy"
                     author="Payment Systems"
                     color="bg-[#F57F17]"
-                    pattern="islamic-4"
+                    pattern="geometric-4"
                   />
                 </div>
               </section>
