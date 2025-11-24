@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Search, 
@@ -22,7 +23,8 @@ import {
   User,
   History,
   List,
-  Info
+  Info,
+  TrendingUp
 } from 'lucide-react';
 
 export { 
@@ -48,5 +50,6 @@ export {
   User,
   History,
   List,
-  Info
+  Info,
+  TrendingUp
 };

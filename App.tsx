@@ -1,9 +1,11 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewMode, ChatMessage, ComplianceDocument } from './types';
 import { MOCK_DOCUMENTS, INITIAL_SUGGESTIONS } from './constants';
 import AppHeader from './components/AppHeader';
 import ChatHistorySidebar from './components/ChatHistorySidebar';
 import LibraryPage from './components/LibraryPage';
+import SearchDropdown from './components/SearchDropdown';
 import { queryComplianceEngine } from './services/geminiService';
 import { 
   ArrowRight, 
@@ -177,18 +179,38 @@ const App = () => {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   
   const [activeCitation, setActiveCitation] = useState<{id: string, x: number, y: number} | null>(null);
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
   
+  const [isLandingSearchFocused, setIsLandingSearchFocused] = useState(false);
+  const landingSearchRef = useRef<HTMLDivElement>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Click outside handler for landing page search
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (landingSearchRef.current && !landingSearchRef.current.contains(event.target as Node)) {
+        setIsLandingSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSearch = async (queryText: string = input) => {
     if (!queryText.trim()) return;
+
+    // Add to recent searches if not exists, keep max 5
+    if (!recentSearches.includes(queryText)) {
+      setRecentSearches(prev => [queryText, ...prev].slice(0, 5));
+    }
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
@@ -203,6 +225,7 @@ const App = () => {
     setView('search');
     setSelectedDocId(null);
     setActiveCitation(null);
+    setIsLandingSearchFocused(false);
 
     const responseText = await queryComplianceEngine(messages, queryText);
 
@@ -261,7 +284,7 @@ const App = () => {
           </div>
         </nav>
 
-        <div className="relative z-10 flex flex-col items-center justify-center pt-8 md:pt-16 px-4">
+        <div className="relative z-30 flex flex-col items-center justify-center pt-8 md:pt-16 px-4">
           <h1 className="font-serif text-4xl md:text-6xl text-white text-center mb-6 tracking-tight leading-tight">
             AI-Powered Compliance Research
           </h1>
@@ -274,13 +297,17 @@ const App = () => {
             How Lexicon Works - 2:00
           </button>
 
-          <div className="w-full max-w-3xl bg-bg-card rounded-[2rem] p-3 shadow-2xl shadow-black/20 relative group focus-within:ring-4 focus-within:ring-primary/20 transition-all z-20">
+          <div 
+            className="w-full max-w-3xl bg-bg-card rounded-[2rem] p-3 shadow-2xl shadow-black/20 relative group focus-within:ring-4 focus-within:ring-primary/20 transition-all z-20"
+            ref={landingSearchRef}
+          >
              <div className="px-6 pt-3 pb-1">
                <textarea 
                  className="w-full text-xl md:text-2xl text-text-main placeholder:text-gray-300 resize-none outline-none bg-transparent h-14 font-light leading-relaxed"
                  placeholder="Send a message..."
                  value={input}
                  onChange={(e) => setInput(e.target.value)}
+                 onFocus={() => setIsLandingSearchFocused(true)}
                  onKeyDown={(e) => {
                    if (e.key === 'Enter' && !e.shiftKey) {
                      e.preventDefault();
@@ -316,6 +343,18 @@ const App = () => {
                  </button>
                </div>
              </div>
+
+             {/* Search Dropdown for Landing Page */}
+             {isLandingSearchFocused && (
+               <SearchDropdown 
+                 recentSearches={recentSearches}
+                 onSearch={(query) => {
+                   handleSearch(query);
+                   setIsLandingSearchFocused(false);
+                 }}
+                 onClearRecent={() => setRecentSearches([])}
+               />
+             )}
           </div>
           
           <div className="flex flex-wrap justify-center gap-3 mt-8 relative z-10">
@@ -472,7 +511,15 @@ const App = () => {
 
   return (
     <div className="flex h-screen w-screen bg-bg-main font-sans text-text-main overflow-hidden flex-col">
-      {!isLandingView && <AppHeader view={view} setView={setView} />}
+      {!isLandingView && 
+        <AppHeader 
+          view={view} 
+          setView={setView} 
+          onSearch={handleSearch}
+          recentSearches={recentSearches}
+          onClearRecent={() => setRecentSearches([])}
+        />
+      }
       
       <main className="flex-1 h-full overflow-hidden flex">
         {isLandingView ? renderLanding() : renderAppView()}

@@ -1,3 +1,4 @@
+
 import { ComplianceDocument, DocumentType, ChatSession, ChatMessage } from './types';
 
 export const INITIAL_SUGGESTIONS = [
@@ -21,6 +22,23 @@ export const DEPARTMENTS: string[] = [
   "Jabatan Audit Dalaman"
 ];
 
+export const POPULAR_SEARCHES = [
+  "Fiqh",
+  "مواقيت الصلاة",
+  "Al-Rissala",
+  "Ibn Al-Jawzi",
+  "Mudarabah Guidelines",
+  "Zakat Calculation"
+];
+
+export const POPULAR_COLLECTIONS = [
+  "Quranic Sciences",
+  "Hadith Sciences",
+  "Fiqh",
+  "Islamic Theology",
+  "Risk Management",
+  "Operational Compliance"
+];
 
 // Mock Corpus - In a real app, this would be in a Vector DB
 export const MOCK_DOCUMENTS: ComplianceDocument[] = [
