@@ -48,86 +48,88 @@ const FormattedText = ({ text, onCitationClick }: { text: string, onCitationClic
 
 const CitationPopup = ({ 
   docId, 
-  position, 
   onClose, 
   onViewDoc 
 }: { 
   docId: string, 
-  position: { x: number, y: number }, 
   onClose: () => void, 
   onViewDoc: (id: string) => void 
 }) => {
   const doc = MOCK_DOCUMENTS.find(d => d.id === docId);
   if (!doc) return null;
 
-  // Calculate position logic to keep it on screen
-  const width = 350;
-  const height = 300; // estimated max height
-  
-  let left = position.x;
-  let top = position.y + 12; // slight buffer
-
-  if (left + width > window.innerWidth) {
-    left = window.innerWidth - width - 24;
-  }
-  
-  const isBottomOverflow = top + height > window.innerHeight;
-  if (isBottomOverflow) {
-    top = position.y - height - 100;
-  }
-
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-transparent" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="fixed z-50 bg-bg-card rounded-xl shadow-2xl border border-border-subtle w-[350px] overflow-hidden animate-in fade-in zoom-in-95 duration-200 ring-1 ring-black/5"
-        style={{ top, left }}
+        className="bg-bg-card rounded-2xl shadow-2xl border border-border-subtle w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative flex flex-col max-h-[80vh]"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-text-main text-white p-3 flex justify-between items-center">
-           <div className="flex items-center gap-2">
-             <BookOpen size={14} className="text-gray-300"/>
-             <span className="font-serif font-medium text-sm">Source Reference</span>
+        {/* Header */}
+        <div className="bg-text-main text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
+           <div className="flex items-center gap-3">
+             <BookOpen size={20} className="text-gray-300"/>
+             <div>
+                <span className="font-serif font-bold text-lg block leading-none mb-1">Source Reference</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider opacity-70 bg-white/10 px-1.5 py-0.5 rounded">{doc.id}</span>
+                  {doc.pageReference && (
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-1.5 py-0.5 rounded">
+                      {doc.pageReference}
+                    </span>
+                  )}
+                </div>
+             </div>
            </div>
-           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-             <X size={16} />
+           <button onClick={onClose} className="text-gray-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition-colors">
+             <X size={20} />
            </button>
         </div>
         
-        <div className="p-4 max-h-[300px] overflow-y-auto">
-           <div className="flex items-start justify-between mb-3">
-             <h4 className="font-bold text-text-main text-sm leading-tight flex-1">{doc.title}</h4>
-             <span className="text-[10px] font-bold text-text-muted border border-border-subtle px-1.5 py-0.5 rounded ml-2 whitespace-nowrap bg-bg-main">{doc.id}</span>
-           </div>
-           
-           <div className="text-xs text-text-muted mb-2 pb-2 border-b border-border-subtle">
-              <span className="font-semibold text-text-main">Type:</span> {doc.type} • <span className="font-semibold text-text-main">Region:</span> {doc.region}
+        {/* Scrollable Content */}
+        <div className="p-6 overflow-y-auto">
+           <div className="flex items-start justify-between mb-6">
+             <div className="flex-1">
+                 <h4 className="font-serif font-bold text-2xl text-text-main mb-2">{doc.title}</h4>
+                 <div className="text-sm text-text-muted flex flex-wrap gap-4">
+                    <span className="flex items-center gap-1"><span className="font-semibold text-text-main">Type:</span> {doc.type}</span>
+                    <span className="w-1 h-1 bg-gray-300 rounded-full self-center"></span>
+                    <span className="flex items-center gap-1"><span className="font-semibold text-text-main">Region:</span> {doc.region}</span>
+                    <span className="w-1 h-1 bg-gray-300 rounded-full self-center"></span>
+                    <span className="flex items-center gap-1"><span className="font-semibold text-text-main">Updated:</span> {doc.lastUpdated}</span>
+                 </div>
+             </div>
            </div>
 
-           <div className="bg-bg-main p-3 rounded border border-border-subtle mb-3">
-             <div className="text-[10px] text-gray-400 uppercase font-bold mb-1">Key Summary</div>
-             <p className="text-xs text-text-muted leading-relaxed font-serif">
+           <div className="bg-bg-main p-4 rounded-xl border border-border-subtle mb-6">
+             <div className="text-xs text-primary font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                <Sparkles size={12} />
+                Key Summary
+             </div>
+             <p className="text-sm text-text-main leading-relaxed font-serif">
                {doc.summary}
              </p>
            </div>
            
-           <div className="mb-4">
-              <div className="text-[10px] text-gray-400 uppercase font-bold mb-1">Document Excerpt</div>
-              <div className="text-xs text-text-muted font-mono bg-bg-main p-2 rounded border border-border-subtle leading-relaxed max-h-24 overflow-hidden relative">
+           <div className="mb-6">
+              <div className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Document Excerpt</div>
+              <div className="text-sm text-text-main font-mono bg-gray-50 p-4 rounded-xl border border-border-subtle leading-relaxed whitespace-pre-line">
                 {doc.content.trim()}
-                <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-bg-main to-transparent pointer-events-none"></div>
               </div>
            </div>
+        </div>
 
+        {/* Footer */}
+        <div className="p-4 border-t border-border-subtle bg-bg-main flex justify-end flex-shrink-0">
            <button 
              onClick={() => onViewDoc(docId)}
-             className="w-full flex items-center justify-center gap-2 bg-bg-main text-text-main border border-border-subtle text-xs font-semibold py-2.5 rounded-lg hover:bg-gray-200 hover:border-gray-300 transition-all"
+             className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary-dark transition-all font-medium shadow-sm hover:shadow-md"
            >
              <span>Open Full Document</span>
-             <ArrowRight size={14} />
+             <ArrowRight size={16} />
            </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -278,10 +280,11 @@ const App = () => {
 
   const handleCitationClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+    // We no longer need coordinates for the modal version, just the ID
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setActiveCitation({
       id,
-      x: rect.left,
+      x: rect.left, // Keeping for type compatibility, but ignored by new component
       y: rect.bottom
     });
   };
@@ -497,7 +500,6 @@ const App = () => {
           {activeCitation && (
             <CitationPopup 
               docId={activeCitation.id}
-              position={activeCitation}
               onClose={() => setActiveCitation(null)}
               onViewDoc={(id) => {
                 setSelectedDocId(id);

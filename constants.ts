@@ -51,6 +51,7 @@ export const MOCK_DOCUMENTS: ComplianceDocument[] = [
     region: "Malaysia",
     department: "Jabatan Pengurusan Risiko",
     lastUpdated: "2020-06-19",
+    pageReference: "Page 42, Para 10.5",
     tags: ["Technology Risk", "Cybersecurity", "Governance"],
     summary: "Sets out the requirements for financial institutions to maintain cyber resilience and manage technology risk.",
     content: `
@@ -73,6 +74,7 @@ export const MOCK_DOCUMENTS: ComplianceDocument[] = [
     region: "Malaysia",
     department: "Jabatan Pematuhan Operasi",
     lastUpdated: "2024-02-05",
+    pageReference: "Section 14, pg. 89",
     tags: ["AML", "CFT", "Compliance"],
     summary: "Requirements for the identification and verification of customers and beneficial owners.",
     content: `
@@ -94,6 +96,7 @@ export const MOCK_DOCUMENTS: ComplianceDocument[] = [
     region: "Malaysia",
     department: "Jabatan Digital Security",
     lastUpdated: "2020-06-30",
+    pageReference: "Para 8.1",
     tags: ["Digital Onboarding", "Identity", "Technology"],
     summary: "Enables digital onboarding of customers via mobile and web channels using biometrics.",
     content: `
@@ -115,6 +118,7 @@ export const MOCK_DOCUMENTS: ComplianceDocument[] = [
     region: "Malaysia",
     department: "Jabatan Undang-Undang",
     lastUpdated: "2013-06-30",
+    pageReference: "Part IV, Section 123",
     tags: ["Legislation", "Governance", "Licensing"],
     summary: "The primary legislation governing the conduct and supervision of financial institutions in Malaysia.",
     content: `
@@ -134,6 +138,7 @@ export const MOCK_DOCUMENTS: ComplianceDocument[] = [
     region: "Malaysia",
     department: "Jabatan Integriti & Tadbir Urus",
     lastUpdated: "2023-12-28",
+    pageReference: "Para 8.1 - 10.2",
     tags: ["Outsourcing", "Vendor Management", "Risk"],
     summary: "Guidelines on managing risks associated with material outsourcing arrangements.",
     content: `

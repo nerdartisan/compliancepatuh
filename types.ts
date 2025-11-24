@@ -14,6 +14,7 @@ export interface ComplianceDocument {
   region: string;
   department: string;
   lastUpdated: string;
+  pageReference?: string; // Specific page/section number
   tags: string[];
   content: string; // The full text or structured chunks
   summary: string;
