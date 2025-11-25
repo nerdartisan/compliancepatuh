@@ -28,7 +28,9 @@ import {
   Zap,
   ExternalLink,
   Download,
-  AlertCircle
+  AlertCircle,
+  UploadCloud,
+  Check
 } from 'lucide-react';
 
 export { 
@@ -55,9 +57,11 @@ export {
   History, 
   List, 
   Info, 
-  TrendingUp,
-  Zap,
-  ExternalLink,
-  Download,
-  AlertCircle
+  TrendingUp, 
+  Zap, 
+  ExternalLink, 
+  Download, 
+  AlertCircle, 
+  UploadCloud,
+  Check
 };

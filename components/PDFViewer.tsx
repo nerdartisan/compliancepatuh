@@ -12,9 +12,14 @@ interface PDFViewerProps {
 const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage }) => {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use Google Docs Viewer to bypass X-Frame-Options (CORS) from external government sites
-  const encodedUrl = encodeURIComponent(document.url || '');
-  const viewerUrl = `https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`;
+  // Determine if it's a local Blob URL (uploaded by admin) or an external URL
+  const isBlobUrl = document.url?.startsWith('blob:');
+
+  // Use Google Docs Viewer proxy only for external URLs to avoid CORS/X-Frame issues.
+  // Local Blobs must be rendered directly by the browser (iframe/embed).
+  const viewerUrl = isBlobUrl 
+    ? document.url 
+    : `https://docs.google.com/viewer?url=${encodeURIComponent(document.url || '')}&embedded=true`;
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-bg-main animate-in fade-in duration-200">
@@ -79,23 +84,27 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
           <div className="absolute inset-0 flex flex-col items-center justify-center z-0 text-text-muted bg-gray-50/50 backdrop-blur-sm">
              <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
              <p className="font-medium animate-pulse">Loading Document Preview...</p>
-             <p className="text-xs text-text-muted mt-2">Using secure viewer proxy</p>
+             <p className="text-xs text-text-muted mt-2">{isBlobUrl ? "Rendering local file..." : "Using secure viewer proxy"}</p>
           </div>
         )}
         
         {document.url ? (
             <>
+                {/* 
+                  NOTE: Google Viewer Proxy only works for public URLs. 
+                  For local blob URLs (from admin upload), we use the browser's native PDF display.
+                */}
                 <iframe 
                     src={viewerUrl} 
                     className="w-full h-full z-10 shadow-lg bg-white" 
                     title={document.title}
                     onLoad={() => setIsLoading(false)}
                     referrerPolicy="no-referrer"
-                    sandbox="allow-scripts allow-same-origin allow-popups"
+                    sandbox={isBlobUrl ? undefined : "allow-scripts allow-same-origin allow-popups"}
                 />
                 
-                {/* Fallback / Warning Banner */}
-                {!isLoading && (
+                {/* Fallback / Warning Banner (Only for proxy/external URLs that might fail) */}
+                {!isLoading && !isBlobUrl && (
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 bg-white/90 backdrop-blur-md border border-border-subtle shadow-lg rounded-full px-4 py-2 flex items-center gap-3 text-xs text-text-muted opacity-80 hover:opacity-100 transition-opacity">
                         <AlertCircle size={14} className="text-orange-500" />
                         <span>Preview not loading?</span>

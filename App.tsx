@@ -8,6 +8,7 @@ import LibraryPage from './components/LibraryPage';
 import SearchDropdown from './components/SearchDropdown';
 import AdvancedSearchPage from './components/AdvancedSearchPage';
 import AboutPage from './components/AboutPage';
+import AdminPage from './components/AdminPage';
 import PDFViewer from './components/PDFViewer';
 import { queryComplianceEngine } from './services/geminiService';
 import { fetchDocuments } from './services/documentService';
@@ -326,6 +327,12 @@ const App = () => {
     }
   };
 
+  const handleDocumentUpload = (newDoc: ComplianceDocument) => {
+    setDocs(prev => [newDoc, ...prev]);
+    setLibrarySearchTerm(newDoc.title);
+    setView('library');
+  };
+
   const handleCitationClick = (e: React.MouseEvent, id: string, pageRef?: string) => {
     e.preventDefault();
     const rect = (e.target as HTMLElement).getBoundingClientRect();
@@ -571,6 +578,10 @@ const App = () => {
   const renderAppView = () => {
     if (view === 'about') {
         return <AboutPage />;
+    }
+
+    if (view === 'admin') {
+      return <AdminPage onUpload={handleDocumentUpload} />;
     }
 
     if (view === 'library') {

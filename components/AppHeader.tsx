@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Moon, User, Globe } from './Icons';
+import { Search, Moon, User, Globe, UploadCloud } from './Icons';
 import { ViewMode, ComplianceDocument } from '../types';
 import SearchDropdown from './SearchDropdown';
 
@@ -87,8 +87,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
       
-      {/* Center: Search bar (desktop only) - HIDDEN ON ADVANCED SEARCH PAGE */}
-      {view !== 'advanced-search' && (
+      {/* Center: Search bar (desktop only) - HIDDEN ON ADVANCED SEARCH PAGE OR ADMIN */}
+      {view !== 'advanced-search' && view !== 'admin' && (
         <div className="hidden lg:flex flex-1 justify-center px-8" ref={dropdownRef}>
           <div className="relative w-full max-w-lg">
             <div className={`relative flex items-center w-full bg-bg-main border ${isFocused ? 'border-primary ring-1 ring-primary/50' : 'border-border-subtle'} rounded-xl transition-all`}>
@@ -130,6 +130,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
       {/* Right side: Controls */}
       <div className="flex items-center gap-2 md:gap-4">
+        <button 
+          onClick={() => setView('admin')}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${view === 'admin' ? 'bg-primary/10 text-primary' : 'text-text-muted hover:bg-bg-main hover:text-text-main'}`}
+          title="Admin Upload"
+        >
+          <UploadCloud size={18} />
+          <span className="hidden sm:inline">Admin</span>
+        </button>
+
         <button className="lg:hidden p-2 text-text-muted hover:text-text-main transition-colors">
           <Search size={20} />
         </button>
