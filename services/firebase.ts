@@ -1,3 +1,4 @@
+
 import { ComplianceDocument, DocumentType } from "../types";
 
 export const fetchDocuments = async (): Promise<ComplianceDocument[]> => {
@@ -34,7 +35,7 @@ SECTION 8: CLIENT MONEY
 8.01 All client monies must be segregated from the provider's own funds.
 8.02 Client trust accounts must be reconciled daily.`,
             summary: "Guidelines regulating the offering of Contracts for Difference (CFDs) to retail and sophisticated investors, ensuring fair treatment and adequate risk disclosure.",
-            url: "https://www.sc.com.my/api/documentms/download.ashx?id=6c498706-9e65-4550-934c-611953714652", // Real SC link for demo
+            url: "https://www.sc.com.my/api/documentms/download.ashx?id=6c498706-9e65-4550-934c-611953714652",
             pageReference: "Full Document"
         },
         {
