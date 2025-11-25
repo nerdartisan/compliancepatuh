@@ -24,7 +24,7 @@ import {
 const FormattedText = ({ text, onCitationClick }: { text: string, onCitationClick: (e: React.MouseEvent, id: string) => void }) => {
   const parts = text.split(/(\[\[.*?\]\])/g);
   return (
-    <span className="leading-relaxed text-text-main">
+    <span className="leading-relaxed text-text-main font-sans">
       {parts.map((part, index) => {
         const match = part.match(/\[\[(.*?)\]\]/);
         if (match) {
@@ -69,7 +69,7 @@ const CitationPopup = ({
            <div className="flex items-center gap-3">
              <BookOpen size={20} className="text-gray-300"/>
              <div>
-                <span className="font-serif font-bold text-lg block leading-none mb-1">Source Reference</span>
+                <span className="font-sans font-bold text-lg block leading-none mb-1">Source Reference</span>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wider opacity-70 bg-white/10 px-1.5 py-0.5 rounded">{doc.id}</span>
                   {doc.pageReference && (
@@ -89,7 +89,7 @@ const CitationPopup = ({
         <div className="p-6 overflow-y-auto">
            <div className="flex items-start justify-between mb-6">
              <div className="flex-1">
-                 <h4 className="font-serif font-bold text-2xl text-text-main mb-2">{doc.title}</h4>
+                 <h4 className="font-sans font-bold text-2xl text-text-main mb-2">{doc.title}</h4>
                  <div className="text-sm text-text-muted flex flex-wrap gap-4">
                     <span className="flex items-center gap-1"><span className="font-semibold text-text-main">Type:</span> {doc.type}</span>
                     <span className="w-1 h-1 bg-gray-300 rounded-full self-center"></span>
@@ -105,7 +105,7 @@ const CitationPopup = ({
                 <Sparkles size={12} />
                 Key Summary
              </div>
-             <p className="text-sm text-text-main leading-relaxed font-serif">
+             <p className="text-sm text-text-main leading-relaxed font-sans">
                {doc.summary}
              </p>
            </div>
@@ -162,12 +162,19 @@ const getPatternStyle = (type: 'grid' | 'waves' | 'scales' | 'dots' | 'default')
   }
 };
 
-const CollectionCard = ({ title, count, colorClass, pattern = 'default' }: { title: string, count: string, colorClass: string, pattern?: 'grid' | 'waves' | 'scales' | 'dots' | 'default' }) => (
+interface CollectionCardProps {
+  title: string;
+  count: string;
+  colorClass: string;
+  pattern?: 'grid' | 'waves' | 'scales' | 'dots' | 'default';
+}
+
+const CollectionCard: React.FC<CollectionCardProps> = ({ title, count, colorClass, pattern = 'default' }) => (
   <div className={`relative h-48 rounded-xl overflow-hidden cursor-pointer group transition-transform hover:-translate-y-1 ${colorClass}`}>
     <div className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay" style={getPatternStyle(pattern)}></div>
     
     <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
-      <h3 className="font-serif text-lg leading-tight mb-2 font-medium tracking-wide">{title}</h3>
+      <h3 className="font-sans text-lg leading-tight mb-2 font-medium tracking-wide">{title}</h3>
       <p className="text-sm opacity-80 font-light flex items-center gap-1">
         <FileText size={12} />
         {count}
@@ -314,7 +321,7 @@ const App = () => {
         <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto text-white/90 text-sm font-medium">
           {/* Left Side */}
           <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2 font-serif text-lg font-bold text-white cursor-pointer" onClick={() => setView('landing')}>
+              <div className="flex items-center gap-2 font-sans text-lg font-bold text-white cursor-pointer" onClick={() => setView('landing')}>
                   <span className="w-8 h-8 bg-primary rounded flex items-center justify-center font-bold">i</span>
                   i-Patuh
               </div>
@@ -338,7 +345,7 @@ const App = () => {
         </nav>
 
         <div className="relative z-50 flex flex-col items-center justify-center pt-8 md:pt-16 px-4">
-          <h1 className="font-serif text-4xl md:text-6xl text-white text-center mb-6 tracking-tight leading-tight">
+          <h1 className="font-sans text-4xl md:text-6xl text-white text-center mb-6 tracking-tight leading-tight">
             AI-Powered Compliance Research
           </h1>
           <p className="text-white/80 text-center mb-10 text-lg font-light tracking-wide max-w-2xl">
@@ -360,7 +367,7 @@ const App = () => {
           >
              <div className="px-6 pt-3 pb-1">
                <textarea 
-                 className="w-full text-xl md:text-2xl text-text-main placeholder:text-gray-300 resize-none outline-none bg-transparent h-14 font-light leading-relaxed"
+                 className="w-full text-xl md:text-2xl text-text-main placeholder:text-gray-300 resize-none outline-none bg-transparent h-14 font-light leading-relaxed font-sans"
                  placeholder={landingSearchMode === 'chat' ? "Send a message..." : "Search for documents..."}
                  value={input}
                  onChange={(e) => setInput(e.target.value)}
@@ -455,7 +462,7 @@ const App = () => {
          <div className="max-w-7xl mx-auto bg-bg-card rounded-[2.5rem] shadow-xl border border-border-subtle p-8 md:p-12">
             <div className="flex items-center justify-between mb-10 text-text-main">
               <div className="flex items-center gap-4">
-                <h2 className="font-serif font-bold text-3xl text-text-main">Departments</h2>
+                <h2 className="font-sans font-bold text-3xl text-text-main">Departments</h2>
                 <span className="bg-gray-200 text-text-muted text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
                   {DEPARTMENTS.length} Units
                 </span>
@@ -480,7 +487,7 @@ const App = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {DEPARTMENTS.slice(deptPage * deptsPerPage, (deptPage + 1) * deptsPerPage).map((dept, index) => {
-                  const styles = [
+                  const styles: { color: string; pattern: CollectionCardProps['pattern'] }[] = [
                       { color: 'bg-[#2E2E2E]', pattern: 'grid' },
                       { color: 'bg-[#144EB6]', pattern: 'waves' },
                       { color: 'bg-[#343A40]', pattern: 'scales' },
@@ -498,7 +505,7 @@ const App = () => {
                       title={dept} 
                       count={`${count} Docs`} 
                       colorClass={style.color} 
-                      pattern={style.pattern as any} 
+                      pattern={style.pattern} 
                     />
                   );
                 })}
@@ -570,7 +577,7 @@ const App = () => {
                 <div className="w-16 h-16 bg-bg-card rounded-2xl shadow-sm border border-border-subtle flex items-center justify-center mb-6">
                     <Sparkles size={32} className="text-primary" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-serif font-bold text-text-main mb-2">Welcome to i-Patuh!</h1>
+                <h1 className="text-3xl md:text-4xl font-sans font-bold text-text-main mb-2">Welcome to i-Patuh!</h1>
                 <p className="text-text-muted text-lg font-light mb-10">Type your first question below</p>
 
                 {/* Suggestion Grid */}
@@ -591,7 +598,7 @@ const App = () => {
                 {/* Input Area (Welcome Mode) */}
                 <div className="w-full max-w-2xl bg-bg-card rounded-[24px] border border-border-subtle shadow-lg shadow-black/5 p-4 relative group focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                     <textarea 
-                        className="w-full bg-transparent text-base text-text-main placeholder:text-text-muted/50 resize-none outline-none h-12 p-1 font-serif"
+                        className="w-full bg-transparent text-base text-text-main placeholder:text-text-muted/50 resize-none outline-none h-12 p-1 font-sans"
                         placeholder="Send a message..."
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -630,25 +637,25 @@ const App = () => {
                   {messages.map((msg) => (
                     <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                       {msg.role === 'model' && (
-                        <div className="w-8 h-8 min-w-[32px] rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs">
+                        <div className="w-8 h-8 min-w-[32px] rounded-full bg-text-main text-white flex items-center justify-center font-sans text-xs">
                           i
                         </div>
                       )}
                       
                       <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-bg-card px-6 py-4 rounded-2xl text-text-main border border-border-subtle' : ''}`}>
                         {msg.role === 'model' ? (
-                          <div className="prose prose-stone max-w-none text-base font-serif">
+                          <div className="prose prose-stone max-w-none text-base font-sans">
                             <FormattedText text={msg.content} onCitationClick={handleCitationClick} />
                           </div>
                         ) : (
-                          <p className="text-base font-serif">{msg.content}</p>
+                          <p className="text-base font-sans">{msg.content}</p>
                         )}
                       </div>
                     </div>
                   ))}
                   {isProcessing && (
                     <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-text-main text-white flex items-center justify-center font-serif text-xs animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-text-main text-white flex items-center justify-center font-sans text-xs animate-pulse">
                           i
                         </div>
                         <div className="flex items-center gap-2 text-text-muted text-sm">
@@ -667,7 +674,7 @@ const App = () => {
                 <div className="max-w-4xl mx-auto">
                   <div className="relative bg-bg-card rounded-2xl p-2.5 shadow-lg shadow-black/5 border border-gray-300/80">
                     <textarea 
-                      className="w-full text-base text-text-main placeholder:text-text-muted resize-none outline-none bg-transparent h-12 p-3 pr-24 font-serif"
+                      className="w-full text-base text-text-main placeholder:text-text-muted resize-none outline-none bg-transparent h-12 p-3 pr-24 font-sans"
                       placeholder="Send a message..."
                       value={input}
                       onChange={(e) => setInput(e.target.value)}

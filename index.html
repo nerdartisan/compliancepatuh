@@ -14,7 +14,8 @@
           extend: {
             fontFamily: {
               sans: ['Poppins', 'sans-serif'],
-              serif: ['Poppins', 'sans-serif'], // Enforce Poppins everywhere
+              serif: ['Poppins', 'sans-serif'], // Force Poppins even for serif classes
+              mono: ['Poppins', 'sans-serif'],  // Force Poppins even for mono classes
             },
             colors: {
               primary: '#007BFF',
@@ -37,7 +38,7 @@
         padding: 0;
         width: 100%;
         height: 100%;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Poppins', sans-serif !important; /* Global override */
       }
       body {
         background-color: #F8F9FA; /* bg-main */

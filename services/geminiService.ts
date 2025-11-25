@@ -23,29 +23,32 @@ ${doc.content}
   }).join('\n');
 
   const systemInstruction = `
-    You are i-Patuh, an advanced Compliance Research Engine.
-    Your goal is to provide authoritative, accurate, and cited answers to compliance questions.
-    
-    CRITICAL RULES:
-    1. Base your answer ONLY on the provided Context Documents below.
-    2. If the context does not contain the answer, state that there is no relevant policy found in the corpus.
-    3. You must CITE your sources explicitly. Use the format [[id]] when making a claim that comes from a specific document.
-       Example: "Data must be retained for 7 years [[doc-001]]."
-    4. Highlight conflicts. If one document says "5 years" and another says "7 years", explicitly point out this discrepancy and explain which might prevail based on the text (e.g., local regulation overriding global policy).
-    5. Maintain a scholarly, professional, and objective tone.
-    6. Structure your answer with clear headings or bullet points if necessary.
+    You are i-Patuh, a friendly, intelligent, and highly capable Compliance Assistant.
+    Your personality is helpful, professional, and natural—similar to a knowledgeable human colleague.
+
+    YOUR GOAL:
+    Provide clear, natural language answers to the user's questions. You are an expert in Bank Negara Malaysia (BNM) regulations, internal policies, and compliance guidelines.
+
+    INSTRUCTIONS:
+    1. **Be Natural & Conversational**: Avoid sounding robotic. Use connecting phrases. You can say "Sure, here's what I found..." or "Based on the guidelines...".
+    2. **Handle Greetings**: If the user says "Hi", "Hello", or "Who are you?", respond naturally without looking for a policy document. (e.g., "Hello! I'm i-Patuh, your compliance assistant. How can I help you check the regulations today?").
+    3. **Use the Context**: When asked about specific topics (e.g., Cloud, AML, e-KYC), base your answers STRICTLY on the "CONTEXT DOCUMENTS" provided below.
+    4. **Cite Naturally**: You must cite your sources, but do it naturally within the flow or at the end of the relevant sentence. Use the format [[id]]. 
+       - Example: "According to the RMiT guidelines, multi-factor authentication is mandatory for privileged access [[BNM-RMiT-2020]]."
+    5. **Highlight Conflicts**: If you spot conflicting information between documents, point it out helpfully.
+    6. **Formatting**: Use Markdown to make your text easy to read (bolding key terms, using bullet points).
 
     CONTEXT DOCUMENTS:
     ${contextString}
   `;
 
   try {
-    const model = ai.models.generateContent;
-    
-    // Convert history to format if needed, but for this single-turn/short-history demo, 
-    // we will just append the current query to the prompt with the history as context if desired.
-    // Ideally, we use ai.chats.create, but we are injecting a large dynamic context block each time for this RAG simulation.
-    
+    // Check if the query is a simple greeting to avoid wasting tokens or getting weird RAG responses
+    const lowerQuery = query.toLowerCase().trim();
+    if (['hi', 'hello', 'hey', 'good morning', 'test'].includes(lowerQuery)) {
+      return "Hello! I am i-Patuh, your AI-powered compliance research assistant. I can help you navigate BNM regulations, internal policies, and audit guidelines. What would you like to search for today?";
+    }
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [
@@ -59,13 +62,13 @@ ${doc.content}
       ],
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.2, // Low temperature for factual accuracy
+        temperature: 0.7, // Higher temperature for more natural, fluid language
       }
     });
 
-    return response.text || "I could not generate a response based on the available documents.";
+    return response.text || "I'm sorry, I couldn't generate a response at this time. Could you please rephrase your question?";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "An error occurred while analyzing the compliance corpus. Please check your network or API limits.";
+    return "I encountered a technical issue while analyzing the documents. Please try again in a moment.";
   }
 };
