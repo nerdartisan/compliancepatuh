@@ -2,13 +2,14 @@
 import { createClient } from '@supabase/supabase-js';
 import { ComplianceDocument } from '../types';
 
-// Access credentials from environment variables or use provided defaults
-// Note: In a production React app, these would typically be REACT_APP_SUPABASE_URL, etc.
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://cjfoymkliuwlzgkboues.supabase.co';
-// Note: The user provided key appears to be a Service Role secret (starts with sb_secret). 
-// In a real production client-side app, you should use the ANON key to respect RLS.
-// However, for this specific implementation context, we use the provided key.
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_secret_idw2Cd3URuCneEHACiVF5w_-e7emVOf';
+// Access credentials from environment variables
+// Vite exposes env vars prefixed with VITE_ to the client
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.error('Missing Supabase credentials. Please check your .env file.');
+}
 
 // Initialize the Supabase client
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -20,12 +21,31 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  */
 export const uploadToSupabase = async (file: Blob | File, docId: string): Promise<string> => {
     try {
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            console.warn("Supabase not configured. Using local blob URL.");
+            return URL.createObjectURL(file);
+        }
+
         const fileName = `${docId}.pdf`;
-        
+
         console.log(`Attempting upload to 'guidelines/${fileName}'...`);
 
-        // 1. Upload to the 'guidelines' bucket
-        // Ensure you have created a public bucket named 'guidelines' in your Supabase Storage dashboard
+        // 1. Check if bucket exists, create if not
+        const { data: buckets } = await supabase.storage.listBuckets();
+        const bucketExists = buckets?.some(bucket => bucket.name === 'guidelines');
+
+        if (!bucketExists) {
+            console.log("Creating 'guidelines' bucket...");
+            const { error: bucketError } = await supabase.storage.createBucket('guidelines', {
+                public: true,
+                fileSizeLimit: 52428800 // 50MB
+            });
+            if (bucketError) {
+                console.error("Failed to create bucket:", bucketError);
+            }
+        }
+
+        // 2. Upload to the 'guidelines' bucket
         const { data, error } = await supabase.storage
             .from('guidelines')
             .upload(fileName, file, {
@@ -38,7 +58,7 @@ export const uploadToSupabase = async (file: Blob | File, docId: string): Promis
             throw error;
         }
 
-        // 2. Get Public URL
+        // 3. Get Public URL
         const { data: { publicUrl } } = supabase.storage
             .from('guidelines')
             .getPublicUrl(fileName);
@@ -47,8 +67,6 @@ export const uploadToSupabase = async (file: Blob | File, docId: string): Promis
         return publicUrl;
     } catch (error) {
         console.error("Error uploading to Supabase:", error);
-        // Fallback to local blob if cloud upload fails so the user can still work in the current session
-        // BUT: This URL will not be valid after refresh. The documentService handles this.
         console.warn("Falling back to local Blob URL due to upload failure.");
         return URL.createObjectURL(file);
     }
@@ -95,9 +113,15 @@ export const saveDocumentMetadata = async (doc: ComplianceDocument): Promise<voi
  */
 export const fetchUserDocuments = async (): Promise<ComplianceDocument[]> => {
     try {
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            console.warn("Supabase not configured. Returning empty array.");
+            return [];
+        }
+
         const { data, error } = await supabase
             .from('documents')
-            .select('*');
+            .select('*')
+            .order('created_at', { ascending: false });
 
         if (error) {
             console.error("Supabase Fetch Error:", error);
