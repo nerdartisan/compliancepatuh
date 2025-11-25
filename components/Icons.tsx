@@ -27,7 +27,8 @@ import {
   TrendingUp,
   Zap,
   ExternalLink,
-  Download
+  Download,
+  AlertCircle
 } from 'lucide-react';
 
 export { 
@@ -57,5 +58,6 @@ export {
   TrendingUp,
   Zap,
   ExternalLink,
-  Download
+  Download,
+  AlertCircle
 };

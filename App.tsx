@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewMode, ChatMessage, ComplianceDocument } from './types';
 import { INITIAL_SUGGESTIONS, DEPARTMENTS } from './constants';
@@ -9,7 +10,7 @@ import AdvancedSearchPage from './components/AdvancedSearchPage';
 import AboutPage from './components/AboutPage';
 import PDFViewer from './components/PDFViewer';
 import { queryComplianceEngine } from './services/geminiService';
-import { fetchDocuments } from './services/firebase';
+import { fetchDocuments } from './services/documentService';
 import { 
   ArrowRight, 
   ArrowLeft,
@@ -226,7 +227,7 @@ const App = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load documents from firebase
+    // Load documents from documentService
     const load = async () => {
         setIsLoadingDocs(true);
         try {
@@ -279,7 +280,7 @@ const App = () => {
     setActiveCitation(null);
     setIsLandingSearchFocused(false);
 
-    // Use current docs (from Firebase) for the AI query
+    // Use current docs for the AI query
     const responseText = await queryComplianceEngine(messages, queryText, docs);
 
     const referencedIds = docs
