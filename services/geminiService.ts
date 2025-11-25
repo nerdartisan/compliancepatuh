@@ -1,4 +1,4 @@
-import { GoogleGenAI, SchemaType, Type } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { ChatMessage, ComplianceDocument } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });

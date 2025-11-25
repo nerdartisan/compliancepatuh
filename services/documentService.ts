@@ -1,34 +1,34 @@
 import { ComplianceDocument, DocumentType } from "../types";
-import { uploadToFirebase } from "./firebase";
+import { uploadToSupabase } from "./supabase";
 
 const PERSISTED_METADATA_KEY = 'i-patuh-user-uploads-metadata';
 
 // --- Service Functions ---
 
-// Helper to save a document to LocalStorage (Metadata) AND Firebase Storage (File)
+// Helper to save a document to LocalStorage (Metadata) AND Supabase Storage (File)
 export const saveDocument = async (doc: ComplianceDocument): Promise<void> => {
     try {
         let finalUrl = doc.url || '';
 
-        // 1. Handle File Persistence to Firebase
+        // 1. Handle File Persistence to Cloud Storage
         // If it's a blob URL (fresh upload), we fetch the data and upload it.
         if (doc.url && doc.url.startsWith('blob:')) {
             try {
                 const response = await fetch(doc.url);
                 const blob = await response.blob();
                 
-                // Upload to Firebase and get the permanent URL
-                finalUrl = await uploadToFirebase(blob, doc.id);
+                // Upload to Supabase and get the permanent URL
+                finalUrl = await uploadToSupabase(blob, doc.id);
             } catch (err) {
-                console.error("Failed to upload file to Firebase:", err);
-                throw new Error("Cloud upload failed. Please check your internet connection.");
+                console.error("Failed to upload file to Supabase:", err);
+                throw new Error("Cloud upload failed. Please check your internet connection and Supabase configuration.");
             }
         }
 
         // 2. Handle Metadata Persistence
         const existing = getPersistedMetadata();
         
-        // Save with the permanent Firebase URL (or existing URL if not a blob)
+        // Save with the permanent Cloud URL (or existing URL if not a blob)
         const docToSave = {
             ...doc,
             url: finalUrl
@@ -321,7 +321,6 @@ Independence
     ];
 
     // 2. Fetch Persisted Metadata from LocalStorage
-    // Since we now store persistent Firebase URLs in the metadata, we don't need to re-hydrate from IndexedDB.
     const userDocs = getPersistedMetadata();
 
     // Simulate network delay for realistic UI behavior
