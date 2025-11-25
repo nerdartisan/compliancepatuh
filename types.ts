@@ -19,6 +19,7 @@ export interface ComplianceDocument {
   tags: string[];
   content: string; // The full text or structured chunks
   summary: string;
+  user_id?: string; // Optional owner ID for database
 }
 
 export interface ChatMessage {

@@ -1,18 +1,17 @@
-import { ComplianceDocument, DocumentType } from "../types";
-import { uploadToSupabase } from "./supabase";
 
-const PERSISTED_METADATA_KEY = 'i-patuh-user-uploads-metadata';
+import { ComplianceDocument, DocumentType } from "../types";
+import { uploadToSupabase, saveDocumentMetadata, fetchUserDocuments } from "./supabase";
 
 // --- Service Functions ---
 
-// Helper to save a document to LocalStorage (Metadata) AND Supabase Storage (File)
+// Helper to save a document to Supabase Storage (File) AND Supabase Database (Metadata)
 export const saveDocument = async (doc: ComplianceDocument): Promise<void> => {
     try {
         let finalUrl = doc.url || '';
 
         // 1. Handle File Persistence to Cloud Storage
         // If it's a blob URL (fresh upload), we fetch the data and upload it.
-        if (doc.url && doc.url.startsWith('blob:')) {
+        if (doc.url && typeof doc.url === 'string' && doc.url.startsWith('blob:')) {
             try {
                 const response = await fetch(doc.url);
                 const blob = await response.blob();
@@ -20,46 +19,37 @@ export const saveDocument = async (doc: ComplianceDocument): Promise<void> => {
                 // Upload to Supabase and get the permanent URL
                 finalUrl = await uploadToSupabase(blob, doc.id);
             } catch (err) {
-                console.error("Failed to upload file to Supabase:", err);
-                throw new Error("Cloud upload failed. Please check your internet connection and Supabase configuration.");
+                console.error("Failed to prepare file for Supabase upload:", err);
+                // We don't throw here immediately, we let the logic below decide whether to persist
+                finalUrl = doc.url; // Keep the blob url for session use
             }
         }
 
-        // 2. Handle Metadata Persistence
-        const existing = getPersistedMetadata();
-        
-        // Save with the permanent Cloud URL (or existing URL if not a blob)
-        const docToSave = {
+        // 2. Handle Metadata Persistence to Database
+        // CRITICAL: Do NOT save to DB if the URL is still a temporary 'blob:'.
+        // Blob URLs expire when the session ends, causing broken links.
+        if (finalUrl && finalUrl.startsWith('blob:')) {
+            console.warn("Document upload failed or is incomplete. Skipping persistence to DB to avoid broken links.");
+            return; 
+        }
+
+        const docToSave: ComplianceDocument = {
             ...doc,
-            url: finalUrl
+            url: finalUrl,
+            tags: doc.tags || []
         };
         
-        // Remove any existing entry with same ID to update it
-        const filtered = existing.filter(d => d.id !== doc.id);
-        const updated = [docToSave, ...filtered];
-        
-        localStorage.setItem(PERSISTED_METADATA_KEY, JSON.stringify(updated));
+        // Save the full metadata + content to the database
+        await saveDocumentMetadata(docToSave);
+
     } catch (error) {
-        console.error("Failed to save document metadata", error);
+        console.error("Failed to save document", error);
         throw error;
     }
 };
 
-// Internal helper for metadata only
-const getPersistedMetadata = (): ComplianceDocument[] => {
-    try {
-        const stored = localStorage.getItem(PERSISTED_METADATA_KEY);
-        if (stored) {
-            return JSON.parse(stored);
-        }
-    } catch (error) {
-        console.error("Failed to load persisted metadata", error);
-    }
-    return [];
-};
-
 export const fetchDocuments = async (): Promise<ComplianceDocument[]> => {
-    // 1. Fetch Mock Data (Static Library)
+    // 1. Fetch Mock Data (Static Library - Official SC Guidelines)
     const mockDocs: ComplianceDocument[] = [
         {
             id: "guidelines-on-cfds",
@@ -320,12 +310,13 @@ Independence
         }
     ];
 
-    // 2. Fetch Persisted Metadata from LocalStorage
-    const userDocs = getPersistedMetadata();
+    // 2. Fetch User Uploads from Supabase DB
+    const userDocs = await fetchUserDocuments();
 
-    // Simulate network delay for realistic UI behavior
+    // Simulate network delay for realistic UI behavior (optional but nice for smooth transitions)
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Merge static library with user library
+    // Merge static library with user uploaded documents
+    // User documents are prepended so they appear first
     return [...userDocs, ...mockDocs];
 };
