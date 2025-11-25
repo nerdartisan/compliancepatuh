@@ -7,6 +7,7 @@ import LibraryPage from './components/LibraryPage';
 import SearchDropdown from './components/SearchDropdown';
 import AdvancedSearchPage from './components/AdvancedSearchPage';
 import AboutPage from './components/AboutPage';
+import PDFViewer from './components/PDFViewer';
 import { queryComplianceEngine } from './services/geminiService';
 import { fetchDocuments } from './services/firebase';
 import { 
@@ -22,22 +23,25 @@ import {
 } from './components/Icons';
 
 // Simple Markdown Parser for the specific citation format
-const FormattedText = ({ text, onCitationClick }: { text: string, onCitationClick: (e: React.MouseEvent, id: string) => void }) => {
+// Parses [[docId|Page X]] or [[docId]]
+const FormattedText = ({ text, onCitationClick }: { text: string, onCitationClick: (e: React.MouseEvent, id: string, page?: string) => void }) => {
+  // Regex to match [[id|page]] or [[id]]
   const parts = text.split(/(\[\[.*?\]\])/g);
   return (
     <span className="leading-relaxed text-text-main font-sans">
       {parts.map((part, index) => {
-        const match = part.match(/\[\[(.*?)\]\]/);
+        const match = part.match(/\[\[(.*?)(?:\|(.*?))?\]\]/);
         if (match) {
           const docId = match[1];
+          const pageRef = match[2]; // Might be "Page 5" or undefined
           return (
             <button
               key={index}
-              onClick={(e) => onCitationClick(e, docId)}
+              onClick={(e) => onCitationClick(e, docId, pageRef)}
               className="inline-flex items-center gap-1 mx-1 px-1.5 py-0.5 bg-accent-light text-primary-dark hover:bg-blue-200 rounded text-xs font-semibold align-baseline border border-blue-200 transition-colors cursor-pointer select-none"
             >
               <BookOpen size={10} />
-              Ref: {docId}
+              Ref: {docId} {pageRef ? ` • ${pageRef}` : ''}
             </button>
           );
         }
@@ -49,18 +53,23 @@ const FormattedText = ({ text, onCitationClick }: { text: string, onCitationClic
 
 const CitationPopup = ({ 
   docId, 
+  pageRef,
   onClose, 
   onViewDoc,
   documents 
 }: { 
   docId: string, 
+  pageRef?: string,
   onClose: () => void, 
-  onViewDoc: (id: string) => void,
+  onViewDoc: (id: string, page?: number) => void,
   documents: ComplianceDocument[]
 }) => {
   
   const doc = documents.find(d => d.id === docId);
   if (!doc) return null;
+
+  // Extract page number if present in "Page X" string
+  const pageNumber = pageRef ? parseInt(pageRef.replace(/\D/g, '')) : undefined;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
@@ -76,9 +85,9 @@ const CitationPopup = ({
                 <span className="font-sans font-bold text-lg block leading-none mb-1">Source Reference</span>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wider opacity-70 bg-white/10 px-1.5 py-0.5 rounded">{doc.id}</span>
-                  {doc.pageReference && (
+                  {pageRef && (
                     <span className="text-[10px] uppercase tracking-wider font-bold text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 px-1.5 py-0.5 rounded">
-                      {doc.pageReference}
+                      {pageRef}
                     </span>
                   )}
                 </div>
@@ -117,7 +126,7 @@ const CitationPopup = ({
            <div className="mb-6">
               <div className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Document Excerpt</div>
               <div className="text-sm text-text-main font-mono bg-gray-50 p-4 rounded-xl border border-border-subtle leading-relaxed whitespace-pre-line">
-                {doc.content ? doc.content.trim() : "Text content not available. Please view the full document."}
+                {doc.content ? doc.content.slice(0, 500) + (doc.content.length > 500 ? "..." : "") : "Text content not available."}
               </div>
            </div>
         </div>
@@ -125,10 +134,10 @@ const CitationPopup = ({
         {/* Footer */}
         <div className="p-4 border-t border-border-subtle bg-bg-main flex justify-end flex-shrink-0">
            <button 
-             onClick={() => onViewDoc(docId)}
+             onClick={() => onViewDoc(docId, pageNumber)}
              className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary-dark transition-all font-medium shadow-sm hover:shadow-md"
            >
-             <span>Open Full Document</span>
+             <span>Open Full Document {pageRef ? `at ${pageRef}` : ''}</span>
              <ArrowRight size={16} />
            </button>
         </div>
@@ -137,7 +146,9 @@ const CitationPopup = ({
   );
 };
 
-const getPatternStyle = (type: 'grid' | 'waves' | 'scales' | 'dots' | 'default') => {
+type PatternType = 'grid' | 'waves' | 'scales' | 'dots' | 'default';
+
+const getPatternStyle = (type: PatternType) => {
   switch (type) {
     case 'grid':
       return { 
@@ -170,12 +181,12 @@ interface CollectionCardProps {
   title: string;
   count: string;
   colorClass: string;
-  pattern?: 'grid' | 'waves' | 'scales' | 'dots' | 'default';
+  pattern?: PatternType;
 }
 
 const CollectionCard: React.FC<CollectionCardProps> = ({ title, count, colorClass, pattern = 'default' }) => (
   <div className={`relative h-48 rounded-xl overflow-hidden cursor-pointer group transition-transform hover:-translate-y-1 ${colorClass}`}>
-    <div className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay" style={getPatternStyle(pattern)}></div>
+    <div className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay" style={getPatternStyle(pattern as PatternType)}></div>
     
     <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
       <h3 className="font-sans text-lg leading-tight mb-2 font-medium tracking-wide">{title}</h3>
@@ -198,9 +209,12 @@ const App = () => {
   const [docs, setDocs] = useState<ComplianceDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(true);
   
-  const [activeCitation, setActiveCitation] = useState<{id: string, x: number, y: number} | null>(null);
+  const [activeCitation, setActiveCitation] = useState<{id: string, pageRef?: string, x: number, y: number} | null>(null);
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
   
+  // New state for PDF Viewer
+  const [viewingDoc, setViewingDoc] = useState<{ doc: ComplianceDocument, page?: number } | null>(null);
+
   const [isLandingSearchFocused, setIsLandingSearchFocused] = useState(false);
   const [landingSearchMode, setLandingSearchMode] = useState<'chat' | 'search'>('chat');
   const landingSearchRef = useRef<HTMLDivElement>(null);
@@ -311,14 +325,23 @@ const App = () => {
     }
   };
 
-  const handleCitationClick = (e: React.MouseEvent, id: string) => {
+  const handleCitationClick = (e: React.MouseEvent, id: string, pageRef?: string) => {
     e.preventDefault();
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setActiveCitation({
       id,
+      pageRef,
       x: rect.left,
       y: rect.bottom
     });
+  };
+  
+  const handleViewDocument = (docId: string, page?: number) => {
+    const doc = docs.find(d => d.id === docId);
+    if (doc) {
+        setViewingDoc({ doc, page });
+        setActiveCitation(null); // Close citation popup if open
+    }
   };
 
   const handleDeptNext = () => {
@@ -508,7 +531,7 @@ const App = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {DEPARTMENTS.slice(deptPage * deptsPerPage, (deptPage + 1) * deptsPerPage).map((dept, index) => {
-                  const styles: { color: string; pattern: CollectionCardProps['pattern'] }[] = [
+                  const styles: { color: string; pattern: PatternType }[] = [
                       { color: 'bg-[#2E2E2E]', pattern: 'grid' },
                       { color: 'bg-[#144EB6]', pattern: 'waves' },
                       { color: 'bg-[#343A40]', pattern: 'scales' },
@@ -550,7 +573,14 @@ const App = () => {
     }
 
     if (view === 'library') {
-      return <LibraryPage initialSearchTerm={librarySearchTerm} documents={docs} isLoading={isLoadingDocs} />;
+      return (
+        <LibraryPage 
+            initialSearchTerm={librarySearchTerm} 
+            documents={docs} 
+            isLoading={isLoadingDocs} 
+            onViewDocument={handleViewDocument}
+        />
+      );
     }
 
     if (view === 'advanced-search') {
@@ -571,24 +601,9 @@ const App = () => {
           {activeCitation && (
             <CitationPopup 
               docId={activeCitation.id}
+              pageRef={activeCitation.pageRef}
               onClose={() => setActiveCitation(null)}
-              onViewDoc={(id) => {
-                const doc = docs.find(d => d.id === id);
-                if (doc) {
-                    if (doc.url) {
-                        window.open(doc.url, '_blank');
-                    } else {
-                        let pageNum = 1;
-                        const pageMatch = doc.pageReference?.match(/(?:page|pg\.?|p\.?)\s*(\d+)/i);
-                        if (pageMatch) {
-                            pageNum = parseInt(pageMatch[1]);
-                        }
-                        const pdfUrl = `https://www.bnm.gov.my/documents/20124/${doc.id}.pdf#page=${pageNum}`;
-                        window.open(pdfUrl, '_blank');
-                    }
-                }
-                setActiveCitation(null);
-              }}
+              onViewDoc={handleViewDocument}
               documents={docs}
             />
           )}
@@ -734,6 +749,15 @@ const App = () => {
 
   return (
     <div className="flex h-screen w-screen bg-bg-main font-sans text-text-main overflow-hidden flex-col">
+      {/* Global PDF Viewer Overlay */}
+      {viewingDoc && (
+        <PDFViewer 
+            document={viewingDoc.doc} 
+            initialPage={viewingDoc.page}
+            onClose={() => setViewingDoc(null)} 
+        />
+      )}
+
       {!isLandingView && 
         <AppHeader 
           view={view} 

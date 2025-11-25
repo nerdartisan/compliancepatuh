@@ -1,63 +1,62 @@
 import { ComplianceDocument, DocumentType, ChatMessage } from './types';
 
 export const INITIAL_SUGGESTIONS = [
-  "What are the cloud adoption requirements under RMBIT?",
-  "Summarize the e-KYC requirements for digital onboarding.",
-  "Identify conflicting instructions regarding outsourcing arrangements.",
-  "Explain the capital adequacy framework for Islamic banks under BNM."
+  "What are the requirements for Digital Asset Exchanges?",
+  "Summarize the marketing restrictions for Unit Trust Funds.",
+  "Explain the compliance duties for Fund Management Companies.",
+  "What are the sales practices for unlisted capital market products?"
 ];
 
-// Keeping the user's specific department list as requested in previous turns
+// Updated to reflect Securities Commission / Capital Market focus
 export const DEPARTMENTS: string[] = [
-  "Jabatan Saluran Fizikal", "Jabatan Saluran Digital", "Jabatan Pengurusan Produk & Pemasaran",
-  "Jabatan Pengurusan Caruman", "Jabatan Pengurusan Transaksi", "Jabatan Pematuhan Operasi", "Cawangan KWSP",
-  "Jabatan Perbendaharaan", "Strategic Investment Department", "Jabatan Ekuiti", "Jabatan Ekuiti Persendirian & Infrastruktur",
-  "Jabatan Pasaran Modal", "Jabatan Pelaburan Hartanah", "Jabatan Strategi Pelaburan & Analitik",
-  "Jabatan Pengurus Dana Luar", "Corporate Sustainability Department", "Jabatan Polisi & Strategi",
-  "Jabatan Hal Ehwal Korporat", "Jabatan Digital Enterprise Solutions", "Jabatan Digital Core Solutions",
-  "Jabatan Digital Security", "Jabatan Digital Infrastructure", "Jabatan Center of Excellence",
-  "People Matters Department", "EPF Learning Campus", "Jabatan Undang-Undang",
-  "Jabatan Pengurusan Perolehan Bekalan", "Jabatan Pengurusan Harta", "Jabatan Kewangan",
-  "Jabatan Perkhidmatan Pelaburan", "Jabatan Pengurusan Risiko", "Jabatan Integriti & Tadbir Urus",
-  "Jabatan Audit Dalaman"
+  "Fund Management",
+  "Digital Assets",
+  "Market Conduct",
+  "Product Regulation",
+  "Islamic Capital Market",
+  "Intermediaries",
+  "Enforcement",
+  "Authorization & Licensing",
+  "Corporate Governance",
+  "Investment Management",
+  "Derivatives",
+  "Consumer & Investor Office"
 ];
 
 export const POPULAR_SEARCHES = [
-  "RMiT",
-  "AML/CFT Policy",
-  "FSA 2013",
-  "e-KYC",
-  "Outsourcing",
-  "Cloud Technology"
+  "Digital Assets",
+  "Unit Trust Funds",
+  "ETF Guidelines",
+  "Wholesale Funds",
+  "Compliance Officer Duties",
+  "Marketing & Distribution"
 ];
 
 export const POPULAR_COLLECTIONS = [
-  "Technology Risk",
-  "Financial Crime",
-  "Governance (FSA)",
-  "Consumer Protection",
-  "Shariah Governance",
-  "Payment Systems"
+  "Digital Innovation",
+  "Fund Management",
+  "Sales Practices",
+  "Shariah Compliant Funds",
+  "Market Intermediaries",
+  "Online Transactions"
 ];
-
-// MOCK_DOCUMENTS has been removed in favor of dynamic Firebase fetching.
 
 export const MOCK_CHAT_HISTORY: { [date: string]: { id: string; title: string }[] } = {
   "Today": [
-    { id: "chat-1", title: "RMiT cloud requirements" },
-    { id: "chat-2", title: "e-KYC FAR limits" }
+    { id: "chat-1", title: "Digital Asset Custody" },
+    { id: "chat-2", title: "ETF Market Makers" }
   ],
   "Yesterday": [
-    { id: "chat-3", title: "Outsourcing approval process" }
+    { id: "chat-3", title: "FMC Compliance Resources" }
   ],
   "5 Days Ago": [
-    { id: "chat-4", title: "FSA 2013 Secrecy provisions" }
+    { id: "chat-4", title: "UTF Cooling-off Right" }
   ],
   "Tuesday, November 18, 2025": [
-    { id: "chat-5", title: "AML/CFT retention period" },
-    { id: "chat-6", title: "Cyber incident reporting timeline" }
+    { id: "chat-5", title: "Wholesale Fund Lodgement" },
+    { id: "chat-6", title: "SRI Fund Tax Incentives" }
   ],
   "Sunday, November 16, 2025": [
-    { id: "chat-7", title: "Guideline on Data Management" }
+    { id: "chat-7", title: "Online Unit Trust Transactions" }
   ]
 };

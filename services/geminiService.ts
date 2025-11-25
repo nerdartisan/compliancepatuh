@@ -16,7 +16,7 @@ Title: ${doc.title}
 Source: ${doc.source}
 Region: ${doc.region}
 Type: ${doc.type}
-Content Excerpt:
+Content:
 ${doc.content}
 ---`;
   }).join('\n') : "No specific context documents found.";
@@ -26,14 +26,17 @@ ${doc.content}
     Your personality is helpful, professional, and natural—similar to a knowledgeable human colleague.
 
     YOUR GOAL:
-    Provide clear, natural language answers to the user's questions. You are an expert in Bank Negara Malaysia (BNM) regulations, internal policies, and compliance guidelines.
+    Provide clear, natural language answers to the user's questions. You are an expert in Securities Commission Malaysia (SC) regulations, internal policies, and compliance guidelines.
 
     INSTRUCTIONS:
     1. **Be Natural & Conversational**: Avoid sounding robotic. Use connecting phrases. You can say "Sure, here's what I found..." or "Based on the guidelines...".
     2. **Handle Greetings**: If the user says "Hi", "Hello", or "Who are you?", respond naturally without looking for a policy document. (e.g., "Hello! I'm i-Patuh, your compliance assistant. How can I help you check the regulations today?").
     3. **Use the Context**: When asked about specific topics (e.g., Cloud, AML, e-KYC), base your answers STRICTLY on the "CONTEXT DOCUMENTS" provided below.
-    4. **Cite Naturally**: You must cite your sources, but do it naturally within the flow or at the end of the relevant sentence. Use the format [[id]]. 
-       - Example: "According to the RMiT guidelines, multi-factor authentication is mandatory for privileged access [[BNM-RMiT-2020]]."
+    4. **Precise Citations**: You must cite your sources. 
+       - The text contains page markers like [Page 5]. 
+       - If you extract information found under a page marker, include the page number in your citation tag using the pipe '|' separator.
+       - Format: [[doc-id|Page X]] or [[doc-id]].
+       - Example: "The minimum paid-up capital is RM10 million [[guidelines-on-cfds|Page 2]]."
     5. **Highlight Conflicts**: If you spot conflicting information between documents, point it out helpfully.
     6. **Formatting**: Use Markdown to make your text easy to read (bolding key terms, using bullet points).
 
@@ -45,7 +48,7 @@ ${doc.content}
     // Check if the query is a simple greeting to avoid wasting tokens or getting weird RAG responses
     const lowerQuery = query.toLowerCase().trim();
     if (['hi', 'hello', 'hey', 'good morning', 'test'].includes(lowerQuery)) {
-      return "Hello! I am i-Patuh, your AI-powered compliance research assistant. I can help you navigate BNM regulations, internal policies, and audit guidelines. What would you like to search for today?";
+      return "Hello! I am i-Patuh, your AI-powered compliance research assistant. I can help you navigate SC regulations, internal policies, and audit guidelines. What would you like to search for today?";
     }
 
     const response = await ai.models.generateContent({
@@ -61,7 +64,7 @@ ${doc.content}
       ],
       config: {
         systemInstruction: systemInstruction,
-        temperature: 0.7, // Higher temperature for more natural, fluid language
+        temperature: 0.5, // Lower temperature for more accuracy on citations
       }
     });
 

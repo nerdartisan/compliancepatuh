@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ComplianceDocument } from '../types';
 import FilterSidebar from './FilterSidebar';
@@ -7,9 +8,10 @@ interface LibraryPageProps {
   initialSearchTerm?: string;
   documents: ComplianceDocument[];
   isLoading?: boolean;
+  onViewDocument: (docId: string) => void;
 }
 
-const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
+const DocumentListItem: React.FC<{ doc: ComplianceDocument, onView: (id: string) => void }> = ({ doc, onView }) => (
   <div className="border-b border-border-subtle py-4 flex justify-between items-start hover:bg-bg-main/50 transition-colors px-2 -mx-2 rounded-lg group">
     <div>
       <h3 className="font-serif text-lg font-medium text-text-main mb-1 group-hover:text-primary transition-colors">{doc.title}</h3>
@@ -18,7 +20,7 @@ const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
       </p>
       <div className="mt-2 flex gap-2">
         <button 
-          onClick={() => doc.url && window.open(doc.url, '_blank')}
+          onClick={() => onView(doc.id)}
           className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-primary hover:text-white hover:border-primary transition-colors"
         >
             View Document
@@ -32,7 +34,7 @@ const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
 );
 
 
-const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', documents = [], isLoading = false }) => {
+const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', documents = [], isLoading = false, onViewDocument }) => {
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
   // Sync prop changes to state if needed (e.g. re-navigating)
@@ -85,7 +87,7 @@ const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', docum
                 {filteredDocuments.length} Documents Found
               </div>
               {filteredDocuments.map(doc => (
-                <DocumentListItem key={doc.id} doc={doc} />
+                <DocumentListItem key={doc.id} doc={doc} onView={onViewDocument} />
               ))}
               {filteredDocuments.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-64 text-text-muted">
