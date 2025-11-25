@@ -1,34 +1,37 @@
-
 import { ComplianceDocument, DocumentType } from "../types";
-import { saveFileToGuidelines, getFileFromGuidelines } from "./storage";
+import { uploadToFirebase } from "./firebase";
 
 const PERSISTED_METADATA_KEY = 'i-patuh-user-uploads-metadata';
 
 // --- Service Functions ---
 
-// Helper to save a document to LocalStorage (Metadata) AND IndexedDB (File)
+// Helper to save a document to LocalStorage (Metadata) AND Firebase Storage (File)
 export const saveDocument = async (doc: ComplianceDocument): Promise<void> => {
     try {
-        // 1. Handle File Persistence to the 'guidelines' store
-        // If it's a blob URL (fresh upload), we fetch the data and store it.
+        let finalUrl = doc.url || '';
+
+        // 1. Handle File Persistence to Firebase
+        // If it's a blob URL (fresh upload), we fetch the data and upload it.
         if (doc.url && doc.url.startsWith('blob:')) {
             try {
                 const response = await fetch(doc.url);
                 const blob = await response.blob();
-                await saveFileToGuidelines(doc.id, blob);
+                
+                // Upload to Firebase and get the permanent URL
+                finalUrl = await uploadToFirebase(blob, doc.id);
             } catch (err) {
-                console.error("Failed to store blob content to guidelines store:", err);
+                console.error("Failed to upload file to Firebase:", err);
+                throw new Error("Cloud upload failed. Please check your internet connection.");
             }
         }
 
         // 2. Handle Metadata Persistence
         const existing = getPersistedMetadata();
         
-        // We cannot store Blob URLs in localStorage as they expire.
-        // We leave the URL empty in metadata; fetchDocuments will re-hydrate it from the storage service.
+        // Save with the permanent Firebase URL (or existing URL if not a blob)
         const docToSave = {
             ...doc,
-            url: doc.url?.startsWith('blob:') ? '' : doc.url
+            url: finalUrl
         };
         
         // Remove any existing entry with same ID to update it
@@ -38,6 +41,7 @@ export const saveDocument = async (doc: ComplianceDocument): Promise<void> => {
         localStorage.setItem(PERSISTED_METADATA_KEY, JSON.stringify(updated));
     } catch (error) {
         console.error("Failed to save document metadata", error);
+        throw error;
     }
 };
 
@@ -317,27 +321,12 @@ Independence
     ];
 
     // 2. Fetch Persisted Metadata from LocalStorage
+    // Since we now store persistent Firebase URLs in the metadata, we don't need to re-hydrate from IndexedDB.
     const userDocs = getPersistedMetadata();
-
-    // 3. Hydrate User Docs with Files from the 'guidelines' Store
-    // We check the storage service for the actual binary files
-    const hydratedUserDocs = await Promise.all(userDocs.map(async (doc) => {
-        // Only try to load from DB if the URL is empty (typical for persisted uploads)
-        if (!doc.url || doc.url === '') {
-            const blob = await getFileFromGuidelines(doc.id);
-            if (blob) {
-                return {
-                    ...doc,
-                    url: URL.createObjectURL(blob)
-                };
-            }
-        }
-        return doc;
-    }));
 
     // Simulate network delay for realistic UI behavior
     await new Promise(resolve => setTimeout(resolve, 300));
 
     // Merge static library with user library
-    return [...hydratedUserDocs, ...mockDocs];
+    return [...userDocs, ...mockDocs];
 };
