@@ -1,12 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
-import { MOCK_DOCUMENTS } from '../constants';
 import { ComplianceDocument } from '../types';
 import FilterSidebar from './FilterSidebar';
 import { Search, List } from './Icons';
 
 interface LibraryPageProps {
   initialSearchTerm?: string;
+  documents: ComplianceDocument[];
 }
 
 const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
@@ -17,7 +16,12 @@ const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
         {doc.source} (d. {new Date(doc.lastUpdated).getFullYear()})
       </p>
       <div className="mt-2 flex gap-2">
-        <button className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-gray-200 transition-colors">PDF</button>
+        <button 
+          onClick={() => doc.url && window.open(doc.url, '_blank')}
+          className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-gray-200 transition-colors"
+        >
+            PDF
+        </button>
         <button className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-gray-200 transition-colors">E-Book</button>
       </div>
     </div>
@@ -29,8 +33,7 @@ const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
 );
 
 
-const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '' }) => {
-  const [documents, setDocuments] = useState<ComplianceDocument[]>(MOCK_DOCUMENTS);
+const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', documents = [] }) => {
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
   // Sync prop changes to state if needed (e.g. re-navigating)

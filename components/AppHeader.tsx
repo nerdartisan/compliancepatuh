@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, Moon, User, Globe } from './Icons';
 import { ViewMode, ComplianceDocument } from '../types';
 import SearchDropdown from './SearchDropdown';
-import { MOCK_DOCUMENTS } from '../constants';
 
 interface AppHeaderProps {
   view: ViewMode;
@@ -11,9 +10,18 @@ interface AppHeaderProps {
   recentSearches: string[];
   onClearRecent: () => void;
   onDocumentSelect?: (docId: string) => void;
+  documents?: ComplianceDocument[];
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSearches, onClearRecent, onDocumentSelect }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ 
+  view, 
+  setView, 
+  onSearch, 
+  recentSearches, 
+  onClearRecent, 
+  onDocumentSelect,
+  documents = []
+}) => {
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -90,7 +98,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
                   onFocus={() => setIsFocused(true)}
                   onKeyDown={handleInputSubmit}
                   placeholder="Search for a text... (⌘ + K)"
-                  className="flex-1 bg-transparent py-2.5 pl-10 pr-4 text-sm placeholder:text-text-muted focus:outline-none"
+                  className="flex-1 bg-transparent py-2.5 pl-10 pr-4 text-sm placeholder:text-text-muted focus:outline-none font-sans"
                 />
                 <Search size={18} className="absolute left-3.5 text-text-muted" />
                 
@@ -111,7 +119,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ view, setView, onSearch, recentSe
                 onSearch={handleSuggestionClick}
                 onClearRecent={onClearRecent}
                 query={inputValue}
-                documents={MOCK_DOCUMENTS}
+                documents={documents}
                 onResultClick={handleDocumentClick}
               />
             )}

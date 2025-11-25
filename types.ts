@@ -15,6 +15,7 @@ export interface ComplianceDocument {
   department: string;
   lastUpdated: string;
   pageReference?: string; // Specific page/section number
+  url?: string; // URL for direct PDF download/view
   tags: string[];
   content: string; // The full text or structured chunks
   summary: string;

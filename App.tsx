@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ViewMode, ChatMessage, ComplianceDocument } from './types';
-import { MOCK_DOCUMENTS, INITIAL_SUGGESTIONS, DEPARTMENTS } from './constants';
+import { INITIAL_SUGGESTIONS, DEPARTMENTS } from './constants';
 import AppHeader from './components/AppHeader';
 import ChatHistorySidebar from './components/ChatHistorySidebar';
 import LibraryPage from './components/LibraryPage';
@@ -8,16 +8,17 @@ import SearchDropdown from './components/SearchDropdown';
 import AdvancedSearchPage from './components/AdvancedSearchPage';
 import AboutPage from './components/AboutPage';
 import { queryComplianceEngine } from './services/geminiService';
+import { fetchDocuments } from './services/firebase';
 import { 
   ArrowRight, 
   ArrowLeft,
   FileText, 
   BookOpen, 
   Search,
-  X,
   Menu,
   Settings,
-  Sparkles
+  Sparkles,
+  X
 } from './components/Icons';
 
 // Simple Markdown Parser for the specific citation format
@@ -49,13 +50,16 @@ const FormattedText = ({ text, onCitationClick }: { text: string, onCitationClic
 const CitationPopup = ({ 
   docId, 
   onClose, 
-  onViewDoc 
+  onViewDoc,
+  documents 
 }: { 
   docId: string, 
   onClose: () => void, 
-  onViewDoc: (id: string) => void 
+  onViewDoc: (id: string) => void,
+  documents: ComplianceDocument[]
 }) => {
-  const doc = MOCK_DOCUMENTS.find(d => d.id === docId);
+  
+  const doc = documents.find(d => d.id === docId);
   if (!doc) return null;
 
   return (
@@ -113,7 +117,7 @@ const CitationPopup = ({
            <div className="mb-6">
               <div className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Document Excerpt</div>
               <div className="text-sm text-text-main font-mono bg-gray-50 p-4 rounded-xl border border-border-subtle leading-relaxed whitespace-pre-line">
-                {doc.content.trim()}
+                {doc.content ? doc.content.trim() : "Text content not available. Please view the full document."}
               </div>
            </div>
         </div>
@@ -191,6 +195,8 @@ const App = () => {
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [librarySearchTerm, setLibrarySearchTerm] = useState('');
+  const [docs, setDocs] = useState<ComplianceDocument[]>([]); // Initialized empty, strictly uses Firebase
+  const [isLoadingDocs, setIsLoadingDocs] = useState(true);
   
   const [activeCitation, setActiveCitation] = useState<{id: string, x: number, y: number} | null>(null);
   const [activeChatId, setActiveChatId] = useState<string>('chat-1');
@@ -204,6 +210,22 @@ const App = () => {
   const deptsPerPage = 6;
 
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Load documents from firebase
+    const load = async () => {
+        setIsLoadingDocs(true);
+        try {
+            const fetched = await fetchDocuments();
+            setDocs(fetched);
+        } catch (err) {
+            console.error("Failed to load documents", err);
+        } finally {
+            setIsLoadingDocs(false);
+        }
+    };
+    load();
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -243,9 +265,10 @@ const App = () => {
     setActiveCitation(null);
     setIsLandingSearchFocused(false);
 
-    const responseText = await queryComplianceEngine(messages, queryText);
+    // Use current docs (from Firebase) for the AI query
+    const responseText = await queryComplianceEngine(messages, queryText, docs);
 
-    const referencedIds = MOCK_DOCUMENTS
+    const referencedIds = docs
       .filter(doc => responseText.includes(doc.id))
       .map(doc => doc.id);
 
@@ -280,8 +303,7 @@ const App = () => {
   };
 
   const handleDocumentSelect = (docId: string) => {
-    // Find doc to get title for search term or just use ID
-    const doc = MOCK_DOCUMENTS.find(d => d.id === docId);
+    const doc = docs.find(d => d.id === docId);
     if (doc) {
       setLibrarySearchTerm(doc.title);
       setView('library');
@@ -291,11 +313,10 @@ const App = () => {
 
   const handleCitationClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    // We no longer need coordinates for the modal version, just the ID
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setActiveCitation({
       id,
-      x: rect.left, // Keeping for type compatibility, but ignored by new component
+      x: rect.left,
       y: rect.bottom
     });
   };
@@ -349,7 +370,7 @@ const App = () => {
             AI-Powered Compliance Research
           </h1>
           <p className="text-white/80 text-center mb-10 text-lg font-light tracking-wide max-w-2xl">
-            Explore, search, and analyze over 15,000 internal & regulatory texts with precision and authority.
+            Explore, search, and analyze over {docs.length > 0 ? docs.length : '15,000'} internal & regulatory texts with precision and authority.
           </p>
 
           <button 
@@ -360,7 +381,7 @@ const App = () => {
             How i-Patuh Works - 2:00
           </button>
 
-          {/* Search Container: z-50 to ensure dropdown goes over Departments card */}
+          {/* Search Container */}
           <div 
             className="w-full max-w-3xl bg-bg-card rounded-[2rem] p-3 shadow-2xl shadow-black/20 relative group focus-within:ring-4 focus-within:ring-primary/20 transition-all z-50"
             ref={landingSearchRef}
@@ -414,7 +435,7 @@ const App = () => {
                </div>
              </div>
 
-             {/* Search Dropdown for Landing Page - ONLY visible in Search Mode */}
+             {/* Search Dropdown for Landing Page */}
              {isLandingSearchFocused && landingSearchMode === 'search' && (
                <SearchDropdown 
                  recentSearches={recentSearches}
@@ -430,7 +451,7 @@ const App = () => {
                  }}
                  onClearRecent={() => setRecentSearches([])}
                  query={input}
-                 documents={MOCK_DOCUMENTS}
+                 documents={docs}
                  onResultClick={handleDocumentSelect}
                />
              )}
@@ -496,7 +517,6 @@ const App = () => {
                       { color: 'bg-[#495057]', pattern: 'scales' }
                   ];
                   const style = styles[index % styles.length];
-                  // Generate a pseudo-random count based on name length
                   const count = Math.floor((dept.length * 123) % 500) + 50; 
                   
                   return (
@@ -530,7 +550,7 @@ const App = () => {
     }
 
     if (view === 'library') {
-      return <LibraryPage initialSearchTerm={librarySearchTerm} />;
+      return <LibraryPage initialSearchTerm={librarySearchTerm} documents={docs} />;
     }
 
     if (view === 'advanced-search') {
@@ -553,21 +573,23 @@ const App = () => {
               docId={activeCitation.id}
               onClose={() => setActiveCitation(null)}
               onViewDoc={(id) => {
-                const doc = MOCK_DOCUMENTS.find(d => d.id === id);
+                const doc = docs.find(d => d.id === id);
                 if (doc) {
-                    let pageNum = 1;
-                    // Regex to find page number in strings like "Section 14, pg. 89" or "Page 42"
-                    const pageMatch = doc.pageReference?.match(/(?:page|pg\.?|p\.?)\s*(\d+)/i);
-                    if (pageMatch) {
-                        pageNum = parseInt(pageMatch[1]);
+                    if (doc.url) {
+                        window.open(doc.url, '_blank');
+                    } else {
+                        let pageNum = 1;
+                        const pageMatch = doc.pageReference?.match(/(?:page|pg\.?|p\.?)\s*(\d+)/i);
+                        if (pageMatch) {
+                            pageNum = parseInt(pageMatch[1]);
+                        }
+                        const pdfUrl = `https://www.bnm.gov.my/documents/20124/${doc.id}.pdf#page=${pageNum}`;
+                        window.open(pdfUrl, '_blank');
                     }
-                    
-                    // Simulate opening a PDF at a specific page.
-                    const pdfUrl = `https://www.bnm.gov.my/documents/20124/${doc.id}.pdf#page=${pageNum}`;
-                    window.open(pdfUrl, '_blank');
                 }
                 setActiveCitation(null);
               }}
+              documents={docs}
             />
           )}
 
@@ -720,6 +742,7 @@ const App = () => {
           recentSearches={recentSearches}
           onClearRecent={() => setRecentSearches([])}
           onDocumentSelect={handleDocumentSelect}
+          documents={docs}
         />
       }
       

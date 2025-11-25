@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { ShieldAlert, Zap, Search, Globe, Network } from './Icons';
 
 const AboutPage = () => {
   return (
-    <div className="flex flex-col h-full w-full bg-bg-main overflow-y-auto">
+    <div className="flex flex-col h-full w-full bg-bg-main overflow-y-auto font-sans">
       {/* Hero Header */}
       <div className="bg-text-main text-white py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">

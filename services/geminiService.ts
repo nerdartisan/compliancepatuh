@@ -1,17 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage, ComplianceDocument } from "../types";
-import { MOCK_DOCUMENTS } from "../constants";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const queryComplianceEngine = async (
   history: ChatMessage[],
   query: string,
-  contextDocuments: ComplianceDocument[] = MOCK_DOCUMENTS
+  contextDocuments: ComplianceDocument[]
 ): Promise<string> => {
   
   // Construct a grounding context from the documents
-  const contextString = contextDocuments.map((doc, index) => {
+  const contextString = contextDocuments.length > 0 ? contextDocuments.map((doc, index) => {
     return `[Document ID: ${doc.id}]
 Title: ${doc.title}
 Source: ${doc.source}
@@ -20,7 +19,7 @@ Type: ${doc.type}
 Content Excerpt:
 ${doc.content}
 ---`;
-  }).join('\n');
+  }).join('\n') : "No specific context documents found.";
 
   const systemInstruction = `
     You are i-Patuh, a friendly, intelligent, and highly capable Compliance Assistant.
