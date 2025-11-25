@@ -4,61 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>i-Patuh - Compliance Intelligence</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Poppins', 'sans-serif'],
-              serif: ['Poppins', 'sans-serif'], // Force Poppins even for serif classes
-              mono: ['Poppins', 'sans-serif'],  // Force Poppins even for mono classes
-            },
-            colors: {
-              primary: '#007BFF',
-              'primary-dark': '#144EB6',
-              'text-main': '#212529',
-              'text-muted': '#6c757d',
-              'bg-main': '#F8F9FA',
-              'bg-card': '#FFFFFF',
-              'border-subtle': '#E9ECEF',
-              'accent-light': '#CCE1F5',
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      /* CSS Reset to remove default browser margins and ensure full-screen layout */
-      html, body, #root {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        font-family: 'Poppins', sans-serif !important; /* Global override */
-      }
-      body {
-        background-color: #F8F9FA; /* bg-main */
-        color: #212529; /* text-main */
-      }
-      /* Custom scrollbar for modern feel */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #E9ECEF; /* border-subtle */
-      }
-      ::-webkit-scrollbar-thumb {
-        background-color: #adb5bd;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background-color: #6c757d; /* text-muted */
-      }
-    </style>
   <script type="importmap">
 {
   "imports": {
@@ -74,5 +22,6 @@
 </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
