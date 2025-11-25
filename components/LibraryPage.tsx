@@ -1,39 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { ComplianceDocument } from '../types';
 import FilterSidebar from './FilterSidebar';
-import { Search, List } from './Icons';
+import { Search, List, Sparkles } from './Icons';
 
 interface LibraryPageProps {
   initialSearchTerm?: string;
   documents: ComplianceDocument[];
+  isLoading?: boolean;
 }
 
 const DocumentListItem: React.FC<{ doc: ComplianceDocument }> = ({ doc }) => (
-  <div className="border-b border-border-subtle py-4 flex justify-between items-start">
+  <div className="border-b border-border-subtle py-4 flex justify-between items-start hover:bg-bg-main/50 transition-colors px-2 -mx-2 rounded-lg group">
     <div>
-      <h3 className="font-serif text-lg font-medium text-text-main mb-1">{doc.title}</h3>
+      <h3 className="font-serif text-lg font-medium text-text-main mb-1 group-hover:text-primary transition-colors">{doc.title}</h3>
       <p className="text-sm text-text-muted">
-        {doc.source} (d. {new Date(doc.lastUpdated).getFullYear()})
+        {doc.source} • {new Date(doc.lastUpdated).getFullYear()} • {doc.type}
       </p>
       <div className="mt-2 flex gap-2">
         <button 
           onClick={() => doc.url && window.open(doc.url, '_blank')}
-          className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-gray-200 transition-colors"
+          className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-primary hover:text-white hover:border-primary transition-colors"
         >
-            PDF
+            View Document
         </button>
-        <button className="text-xs font-semibold bg-bg-main text-text-muted px-3 py-1 rounded-full border border-border-subtle hover:bg-gray-200 transition-colors">E-Book</button>
       </div>
     </div>
-    <div className="text-right text-text-muted flex-shrink-0 ml-4">
-       <h4 className="font-serif text-lg font-medium text-text-main">{doc.title}</h4>
-       <p className="text-sm">{doc.source} / {doc.lastUpdated}</p>
+    <div className="text-right text-text-muted flex-shrink-0 ml-4 hidden md:block">
+       <div className="text-xs font-mono bg-gray-100 px-2 py-1 rounded text-text-muted">{doc.id}</div>
     </div>
   </div>
 );
 
 
-const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', documents = [] }) => {
+const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', documents = [], isLoading = false }) => {
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 
   // Sync prop changes to state if needed (e.g. re-navigating)
@@ -74,14 +73,27 @@ const LibraryPage: React.FC<LibraryPageProps> = ({ initialSearchTerm = '', docum
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-6">
-          {filteredDocuments.map(doc => (
-            <DocumentListItem key={doc.id} doc={doc} />
-          ))}
-          {filteredDocuments.length === 0 && (
-            <div className="p-10 text-center text-text-muted">
-              No documents found matching "{searchTerm}"
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-64 text-text-muted gap-4">
+                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                <p className="text-sm font-medium animate-pulse">Syncing with secure storage...</p>
             </div>
+          ) : (
+            <>
+              <div className="mb-4 text-xs font-bold text-text-muted uppercase tracking-wider">
+                {filteredDocuments.length} Documents Found
+              </div>
+              {filteredDocuments.map(doc => (
+                <DocumentListItem key={doc.id} doc={doc} />
+              ))}
+              {filteredDocuments.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-64 text-text-muted">
+                  <Search size={48} className="mb-4 opacity-20" />
+                  <p className="text-lg">No documents found matching "{searchTerm}"</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

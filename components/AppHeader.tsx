@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Moon, User, Globe } from './Icons';
 import { ViewMode, ComplianceDocument } from '../types';

@@ -195,7 +195,7 @@ const App = () => {
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [librarySearchTerm, setLibrarySearchTerm] = useState('');
-  const [docs, setDocs] = useState<ComplianceDocument[]>([]); // Initialized empty, strictly uses Firebase
+  const [docs, setDocs] = useState<ComplianceDocument[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(true);
   
   const [activeCitation, setActiveCitation] = useState<{id: string, x: number, y: number} | null>(null);
@@ -550,7 +550,7 @@ const App = () => {
     }
 
     if (view === 'library') {
-      return <LibraryPage initialSearchTerm={librarySearchTerm} documents={docs} />;
+      return <LibraryPage initialSearchTerm={librarySearchTerm} documents={docs} isLoading={isLoadingDocs} />;
     }
 
     if (view === 'advanced-search') {
