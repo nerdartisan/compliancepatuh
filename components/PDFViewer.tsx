@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, ExternalLink, Download, FileText } from './Icons';
 import { ComplianceDocument } from '../types';
@@ -11,11 +12,11 @@ interface PDFViewerProps {
 const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage }) => {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Construct URL with page fragment if available
-  // Standard browser PDF viewers support #page=N
-  const pdfUrl = initialPage 
-    ? `${document.url}#page=${initialPage}` 
-    : document.url;
+  // Use Google Docs Viewer to bypass X-Frame-Options (CORS) from external government sites
+  // Note: Page navigation (#page=N) is not reliably supported by Google Viewer embed, 
+  // but it ensures the document actually renders.
+  const encodedUrl = encodeURIComponent(document.url || '');
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodedUrl}&embedded=true`;
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-bg-main animate-in fade-in duration-200">
@@ -43,12 +44,12 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
 
         <div className="flex items-center gap-3 flex-shrink-0">
           <button 
-            onClick={() => window.open(pdfUrl, '_blank')}
+            onClick={() => window.open(document.url, '_blank')}
             className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-main hover:bg-bg-main rounded-lg border border-transparent hover:border-border-subtle transition-all"
-            title="Open in new tab"
+            title="Open original file directly"
           >
             <ExternalLink size={16} />
-            <span>New Tab</span>
+            <span>Open Original</span>
           </button>
           
           <a 
@@ -83,8 +84,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
         
         {document.url ? (
             <iframe 
-                src={pdfUrl} 
-                className="w-full h-full z-10 shadow-lg" 
+                src={viewerUrl} 
+                className="w-full h-full z-10 shadow-lg bg-white" 
                 title={document.title}
                 onLoad={() => setIsLoading(false)}
             />

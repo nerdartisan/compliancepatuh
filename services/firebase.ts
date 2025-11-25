@@ -3,7 +3,7 @@ import { ComplianceDocument, DocumentType } from "../types";
 
 export const fetchDocuments = async (): Promise<ComplianceDocument[]> => {
     // Mock data based on Securities Commission Guidelines
-    // Content now includes [Page X] markers to simulate OCR/Text Extraction indexing
+    // Content includes [Page X] markers to simulate OCR/Text Extraction indexing
     const mockDocs: ComplianceDocument[] = [
         {
             id: "guidelines-on-cfds",
