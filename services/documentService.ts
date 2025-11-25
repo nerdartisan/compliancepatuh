@@ -1,6 +1,40 @@
 
 import { ComplianceDocument, DocumentType } from "../types";
 
+const PERSISTED_DOCS_KEY = 'i-patuh-user-uploads';
+
+// Helper to save a document to LocalStorage
+export const saveDocument = (doc: ComplianceDocument): void => {
+    try {
+        const existing = getPersistedDocuments();
+        // We cannot store Blob URLs in localStorage as they expire.
+        // For persistence, we remove the URL if it's a blob, or keep it if it's external.
+        // The content/text is what matters for the AI.
+        const docToSave = {
+            ...doc,
+            url: doc.url?.startsWith('blob:') ? '' : doc.url
+        };
+        
+        const updated = [docToSave, ...existing];
+        localStorage.setItem(PERSISTED_DOCS_KEY, JSON.stringify(updated));
+    } catch (error) {
+        console.error("Failed to save document to storage", error);
+    }
+};
+
+// Helper to retrieve user uploads
+export const getPersistedDocuments = (): ComplianceDocument[] => {
+    try {
+        const stored = localStorage.getItem(PERSISTED_DOCS_KEY);
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (error) {
+        console.error("Failed to load persisted documents", error);
+    }
+    return [];
+};
+
 export const fetchDocuments = async (): Promise<ComplianceDocument[]> => {
     // Mock data based on Securities Commission Guidelines
     // Content includes [Page X] markers to simulate OCR/Text Extraction indexing
@@ -264,8 +298,12 @@ Independence
         }
     ];
 
+    // Fetch persisted user uploads
+    const userDocs = getPersistedDocuments();
+
     // Simulate network delay for realistic UI behavior
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    return mockDocs;
+    // Merge and return
+    return [...userDocs, ...mockDocs];
 };

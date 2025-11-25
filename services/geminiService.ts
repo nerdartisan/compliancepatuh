@@ -1,7 +1,82 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, SchemaType, Type } from "@google/genai";
 import { ChatMessage, ComplianceDocument } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+// Helper to convert File to Base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove the Data URL prefix (e.g., "data:application/pdf;base64,")
+      const base64Part = result.split(',')[1];
+      resolve(base64Part);
+    };
+    reader.onerror = error => reject(error);
+  });
+};
+
+export const analyzeDocument = async (file: File): Promise<Partial<ComplianceDocument>> => {
+  try {
+    const base64Data = await fileToBase64(file);
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              inlineData: {
+                mimeType: file.type,
+                data: base64Data
+              }
+            },
+            {
+              text: `Analyze this document and extract the following information in JSON format:
+              1. title: The official title of the document.
+              2. type: The type of document (Regulation, Guideline, Internal Policy, or Audit Requirement).
+              3. region: The jurisdiction (e.g., Malaysia, Global).
+              4. department: The most relevant department (e.g., Fund Management, Risk, Digital Assets).
+              5. lastUpdated: The date of the document (YYYY-MM-DD).
+              6. summary: A concise executive summary (max 2 sentences).
+              7. content: The full text content of the document, preserving headers and structure. Add [Page X] markers if possible.
+              8. tags: An array of 3-5 keywords.
+              `
+            }
+          ]
+        }
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            type: { type: Type.STRING },
+            region: { type: Type.STRING },
+            department: { type: Type.STRING },
+            lastUpdated: { type: Type.STRING },
+            summary: { type: Type.STRING },
+            content: { type: Type.STRING },
+            tags: { type: Type.ARRAY, items: { type: Type.STRING } }
+          }
+        }
+      }
+    });
+
+    if (response.text) {
+        return JSON.parse(response.text);
+    }
+    throw new Error("No response from AI model");
+
+  } catch (error) {
+    console.error("Error analyzing document:", error);
+    throw error;
+  }
+};
 
 export const queryComplianceEngine = async (
   history: ChatMessage[],

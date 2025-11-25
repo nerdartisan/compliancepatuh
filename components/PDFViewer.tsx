@@ -16,7 +16,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
   const isBlobUrl = document.url?.startsWith('blob:');
 
   // Use Google Docs Viewer proxy only for external URLs to avoid CORS/X-Frame issues.
-  // Local Blobs must be rendered directly by the browser (iframe/embed).
   const viewerUrl = isBlobUrl 
     ? document.url 
     : `https://docs.google.com/viewer?url=${encodeURIComponent(document.url || '')}&embedded=true`;
@@ -81,7 +80,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
       {/* PDF Content */}
       <div className="flex-1 relative bg-gray-100 w-full h-full overflow-hidden flex flex-col items-center justify-center">
         {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-0 text-text-muted bg-gray-50/50 backdrop-blur-sm">
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-0 text-text-muted bg-gray-50/50 backdrop-blur-sm pointer-events-none">
              <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
              <p className="font-medium animate-pulse">Loading Document Preview...</p>
              <p className="text-xs text-text-muted mt-2">{isBlobUrl ? "Rendering local file..." : "Using secure viewer proxy"}</p>
@@ -91,19 +90,49 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
         {document.url ? (
             <>
                 {/* 
-                  NOTE: Google Viewer Proxy only works for public URLs. 
-                  For local blob URLs (from admin upload), we use the browser's native PDF display.
+                  RENDER STRATEGY:
+                  1. Local Blobs (Uploads): Use <object> tag. This allows native PDF rendering while respecting local resource security better than iframes.
+                  2. Remote URLs: Use Google Docs Viewer iframe proxy.
                 */}
-                <iframe 
-                    src={viewerUrl} 
-                    className="w-full h-full z-10 shadow-lg bg-white" 
-                    title={document.title}
-                    onLoad={() => setIsLoading(false)}
-                    referrerPolicy="no-referrer"
-                    sandbox={isBlobUrl ? undefined : "allow-scripts allow-same-origin allow-popups"}
-                />
+                {isBlobUrl ? (
+                    <object
+                        data={document.url}
+                        type="application/pdf"
+                        className="w-full h-full z-10 shadow-lg bg-white"
+                        onLoad={() => setIsLoading(false)}
+                    >
+                        {/* Fallback if object tag fails or is blocked by strict sandbox */}
+                        <div className="flex flex-col items-center justify-center h-full text-text-muted p-8">
+                            <AlertCircle size={48} className="mb-4 text-orange-400" />
+                            <h3 className="text-xl font-bold text-text-main mb-2">Preview Restricted</h3>
+                            <p className="mb-6 text-center max-w-md">
+                                Your browser or environment is blocking the inline preview of this local file.
+                                You can still view the full document in a new tab.
+                            </p>
+                            <a 
+                                href={document.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium shadow-md"
+                            >
+                                <ExternalLink size={18} />
+                                Open PDF in New Tab
+                            </a>
+                        </div>
+                    </object>
+                ) : (
+                    <iframe 
+                        src={viewerUrl} 
+                        className="w-full h-full z-10 shadow-lg bg-white" 
+                        title={document.title}
+                        onLoad={() => setIsLoading(false)}
+                        referrerPolicy="no-referrer"
+                        // Sandbox attributes to allow scripts (needed for Google Viewer) but maintain security
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                    />
+                )}
                 
-                {/* Fallback / Warning Banner (Only for proxy/external URLs that might fail) */}
+                {/* Fallback / Warning Banner for Remote URLs */}
                 {!isLoading && !isBlobUrl && (
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 bg-white/90 backdrop-blur-md border border-border-subtle shadow-lg rounded-full px-4 py-2 flex items-center gap-3 text-xs text-text-muted opacity-80 hover:opacity-100 transition-opacity">
                         <AlertCircle size={14} className="text-orange-500" />
@@ -116,6 +145,9 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
                         </button>
                     </div>
                 )}
+                
+                {/* Hide loading spinner once component mounts/attempts to load (for object tag especially) */}
+                {isBlobUrl && <div className="hidden" ref={() => setTimeout(() => setIsLoading(false), 1000)} />}
             </>
         ) : (
             <div className="z-10 bg-white p-8 rounded-xl shadow-lg text-center max-w-md border border-border-subtle">

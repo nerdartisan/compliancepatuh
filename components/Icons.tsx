@@ -62,6 +62,6 @@ export {
   ExternalLink, 
   Download, 
   AlertCircle, 
-  UploadCloud,
+  UploadCloud, 
   Check
 };

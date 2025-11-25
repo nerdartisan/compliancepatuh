@@ -11,7 +11,7 @@ import AboutPage from './components/AboutPage';
 import AdminPage from './components/AdminPage';
 import PDFViewer from './components/PDFViewer';
 import { queryComplianceEngine } from './services/geminiService';
-import { fetchDocuments } from './services/documentService';
+import { fetchDocuments, saveDocument } from './services/documentService';
 import { 
   ArrowRight, 
   ArrowLeft,
@@ -328,6 +328,10 @@ const App = () => {
   };
 
   const handleDocumentUpload = (newDoc: ComplianceDocument) => {
+    // Persist the document (stripping blob url for storage)
+    saveDocument(newDoc);
+    
+    // Update local state immediately with the full doc (including blob url) so the user can view it now
     setDocs(prev => [newDoc, ...prev]);
     setLibrarySearchTerm(newDoc.title);
     setView('library');
@@ -581,7 +585,7 @@ const App = () => {
     }
 
     if (view === 'admin') {
-      return <AdminPage onUpload={handleDocumentUpload} />;
+      return <AdminPage onUpload={handleDocumentUpload} documents={docs} />;
     }
 
     if (view === 'library') {
