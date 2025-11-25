@@ -1,43 +1,61 @@
 
 import { ComplianceDocument, DocumentType } from "../types";
+import { saveFileToGuidelines, getFileFromGuidelines } from "./storage";
 
-const PERSISTED_DOCS_KEY = 'i-patuh-user-uploads';
+const PERSISTED_METADATA_KEY = 'i-patuh-user-uploads-metadata';
 
-// Helper to save a document to LocalStorage
-export const saveDocument = (doc: ComplianceDocument): void => {
+// --- Service Functions ---
+
+// Helper to save a document to LocalStorage (Metadata) AND IndexedDB (File)
+export const saveDocument = async (doc: ComplianceDocument): Promise<void> => {
     try {
-        const existing = getPersistedDocuments();
+        // 1. Handle File Persistence to the 'guidelines' store
+        // If it's a blob URL (fresh upload), we fetch the data and store it.
+        if (doc.url && doc.url.startsWith('blob:')) {
+            try {
+                const response = await fetch(doc.url);
+                const blob = await response.blob();
+                await saveFileToGuidelines(doc.id, blob);
+            } catch (err) {
+                console.error("Failed to store blob content to guidelines store:", err);
+            }
+        }
+
+        // 2. Handle Metadata Persistence
+        const existing = getPersistedMetadata();
+        
         // We cannot store Blob URLs in localStorage as they expire.
-        // For persistence, we remove the URL if it's a blob, or keep it if it's external.
-        // The content/text is what matters for the AI.
+        // We leave the URL empty in metadata; fetchDocuments will re-hydrate it from the storage service.
         const docToSave = {
             ...doc,
             url: doc.url?.startsWith('blob:') ? '' : doc.url
         };
         
-        const updated = [docToSave, ...existing];
-        localStorage.setItem(PERSISTED_DOCS_KEY, JSON.stringify(updated));
+        // Remove any existing entry with same ID to update it
+        const filtered = existing.filter(d => d.id !== doc.id);
+        const updated = [docToSave, ...filtered];
+        
+        localStorage.setItem(PERSISTED_METADATA_KEY, JSON.stringify(updated));
     } catch (error) {
-        console.error("Failed to save document to storage", error);
+        console.error("Failed to save document metadata", error);
     }
 };
 
-// Helper to retrieve user uploads
-export const getPersistedDocuments = (): ComplianceDocument[] => {
+// Internal helper for metadata only
+const getPersistedMetadata = (): ComplianceDocument[] => {
     try {
-        const stored = localStorage.getItem(PERSISTED_DOCS_KEY);
+        const stored = localStorage.getItem(PERSISTED_METADATA_KEY);
         if (stored) {
             return JSON.parse(stored);
         }
     } catch (error) {
-        console.error("Failed to load persisted documents", error);
+        console.error("Failed to load persisted metadata", error);
     }
     return [];
 };
 
 export const fetchDocuments = async (): Promise<ComplianceDocument[]> => {
-    // Mock data based on Securities Commission Guidelines
-    // Content includes [Page X] markers to simulate OCR/Text Extraction indexing
+    // 1. Fetch Mock Data (Static Library)
     const mockDocs: ComplianceDocument[] = [
         {
             id: "guidelines-on-cfds",
@@ -298,12 +316,28 @@ Independence
         }
     ];
 
-    // Fetch persisted user uploads
-    const userDocs = getPersistedDocuments();
+    // 2. Fetch Persisted Metadata from LocalStorage
+    const userDocs = getPersistedMetadata();
+
+    // 3. Hydrate User Docs with Files from the 'guidelines' Store
+    // We check the storage service for the actual binary files
+    const hydratedUserDocs = await Promise.all(userDocs.map(async (doc) => {
+        // Only try to load from DB if the URL is empty (typical for persisted uploads)
+        if (!doc.url || doc.url === '') {
+            const blob = await getFileFromGuidelines(doc.id);
+            if (blob) {
+                return {
+                    ...doc,
+                    url: URL.createObjectURL(blob)
+                };
+            }
+        }
+        return doc;
+    }));
 
     // Simulate network delay for realistic UI behavior
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Merge and return
-    return [...userDocs, ...mockDocs];
+    // Merge static library with user library
+    return [...hydratedUserDocs, ...mockDocs];
 };

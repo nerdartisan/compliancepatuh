@@ -327,12 +327,16 @@ const App = () => {
     }
   };
 
-  const handleDocumentUpload = (newDoc: ComplianceDocument) => {
+  const handleDocumentUpload = async (newDoc: ComplianceDocument) => {
     // Persist the document (stripping blob url for storage)
-    saveDocument(newDoc);
+    await saveDocument(newDoc);
     
     // Update local state immediately with the full doc (including blob url) so the user can view it now
-    setDocs(prev => [newDoc, ...prev]);
+    setDocs(prev => {
+        // Remove duplicate if it exists (update)
+        const filtered = prev.filter(d => d.id !== newDoc.id);
+        return [newDoc, ...filtered];
+    });
     setLibrarySearchTerm(newDoc.title);
     setView('library');
   };

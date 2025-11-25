@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { UploadCloud, FileText, X, Sparkles, Check, Zap } from './Icons';
 import { ComplianceDocument, DocumentType } from '../types';
@@ -138,7 +139,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onUpload }) => {
                 isDragging 
                   ? 'border-primary bg-primary/5' 
                   : file 
-                    ? 'border-green-500 bg-green-50' 
+                    ? 'border-green-50' 
                     : 'border-gray-300 hover:border-primary/50 hover:bg-gray-50'
               }`}
               onDragOver={handleDragOver}
@@ -292,7 +293,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ onUpload }) => {
                 className="px-8 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
               >
                 {isAnalyzing ? <Sparkles size={16} className="animate-spin" /> : <Check size={16} />}
-                {isAnalyzing ? 'Analyzing...' : 'Upload to Library'}
+                {isAnalyzing ? 'Analyzing...' : 'Save to Guidelines Library'}
               </button>
             </div>
 

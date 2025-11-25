@@ -147,7 +147,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ document, onClose, initialPage })
                 )}
                 
                 {/* Hide loading spinner once component mounts/attempts to load (for object tag especially) */}
-                {isBlobUrl && <div className="hidden" ref={() => setTimeout(() => setIsLoading(false), 1000)} />}
+                {isBlobUrl && <div className="hidden" ref={() => { setTimeout(() => setIsLoading(false), 1000); }} />}
             </>
         ) : (
             <div className="z-10 bg-white p-8 rounded-xl shadow-lg text-center max-w-md border border-border-subtle">
